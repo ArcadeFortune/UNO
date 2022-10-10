@@ -2,6 +2,14 @@ function isJsEnabled() {
     document.querySelector(".js").remove()
 }
 
+function createTitle(text, body) {
+    const title = document.createElement("h1")
+    title.innerHTML = text
+    title.style.textDecoration = "underline"
+    body.appendChild(title)
+
+}
+
 function removeBody() {
 
     
@@ -23,7 +31,6 @@ function settings(gameSettings) {
 
     //set means settings, so I can differenciate between settings and main page
     //creating elements for settings
-    const setTitle = document.createElement("h1")
     const setBody = document.createElement("body")
     const setReturn = document.createElement("button")
 
@@ -51,7 +58,6 @@ function settings(gameSettings) {
     }
 
     //making the elements do something
-    setTitle.innerHTML = "The Settings"
     setReturn.innerHTML = "return"
     setReturn.onclick = function () {
         console.log("returning to main Page...")
@@ -62,7 +68,7 @@ function settings(gameSettings) {
     
 
     //applying the elements
-    setBody.appendChild(setTitle)
+    createTitle("The Settings", setBody)
     createSettings("Card start amount: ", "startCardAmount", 2, 11, gameSettings.startCardAmount)
     createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount)
     createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, gameSettings.startPlusFourAmount)
@@ -83,7 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = document.querySelector("body")
 
     //creating elements for main page
-    const title = document.createElement("h1")
     const startBtn = document.createElement("button")
     const settingBtn = document.createElement("button")
     var gameSettings = { //default settings
@@ -94,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     //making elements do something
-    title.innerHTML = "Welcome to UNO!"
     startBtn.innerHTML = "Start Game"
     startBtn.onclick = function () {
         startGame(gameSettings)
@@ -105,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     //appending elements
-    body.appendChild(title)
+    createTitle("Welcome to UNO!", body)
     body.appendChild(startBtn)
     body.appendChild(settingBtn)
 })  
