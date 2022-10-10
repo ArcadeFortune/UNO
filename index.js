@@ -4,20 +4,13 @@ function isJsEnabled() {
 
 function startGame(settings) {
     console.log("game started with the following settings: ", settings)
-
 }
 
 function settings(isClicked, gameSettings) {
 
-
-    //check if the button is clicked (its important)
+    //check if the button is clicked (its important) edit: i think its not important
     if (isClicked === "clicked") { 
-        function findCardAmount(setCardAmount) {
-            //tells the ammount of cards that will be delt at the beginning of the game
-            gameSettings.startCardAmount = setCardAmount[setCardAmount.selectedIndex].value
-            console.log("changed game settings to: ", gameSettings)
-            return gameSettings
-        }
+
         //remove main page (will be added back)
         const html = document.querySelector("html")
         const oldBody = document.querySelector("body")
@@ -27,21 +20,37 @@ function settings(isClicked, gameSettings) {
         //creating elements for settings
         const setTitle = document.createElement("h1")
         const setBody = document.createElement("body")
-        const setP1 = document.createElement("p")
-        const setCardAmount = document.createElement("select")
         const setReturn = document.createElement("button")
+
+        //allows you to create settings very easily
+        function createSettings(text, jsontext, optionStart, optionEnd, selectedOption) {
+            const setAmountP = document.createElement("p")
+            const setAmount = document.createElement("select")
+            setAmountP.innerHTML = text
+            setAmount.onblur = function () {
+                //tells the ammount of the selected value
+                gameSettings[jsontext] = setAmount[setAmount.selectedIndex].value
+                console.log("changed game settings to: ", gameSettings)
+            }
+            
+            for (let i = optionStart; i < optionEnd; i++){ //Card amount option slider
+                const setAmountOption = document.createElement("option")
+                setAmountOption.innerHTML = i
+                if (i === selectedOption) {
+                    setAmountOption.selected = true
+                }
+                setAmount.append(setAmountOption)
+            }
+            setAmountP.appendChild(setAmount)
+            setBody.appendChild(setAmountP)
+        }
 
         //making the elements do something
         setTitle.innerHTML = "The Settings"
-        setP1.innerHTML = "Card start ammount: "
-        setCardAmount.onblur = function () {
-            gameSettings = findCardAmount(setCardAmount)
-        }
         setReturn.innerHTML = "return"
         setReturn.onclick = function () {
             console.log("returning to main Page...")
             setBody.replaceWith(oldBody)
-
         }
 
         
@@ -49,27 +58,16 @@ function settings(isClicked, gameSettings) {
 
         //applying the elements
         setBody.appendChild(setTitle)
-        for (let i = 1; i < 11; i++){
-            const setCardAmountOption = document.createElement("option")
-            setCardAmountOption.innerHTML = i
-            if (i === 7) {
-                setCardAmountOption.selected = true
-            }
-            setCardAmount.append(setCardAmountOption)
-        }
-        setP1.appendChild(setCardAmount)
-        setBody.appendChild(setP1)
+        createSettings("Card start amount: ", "startCardAmount", 2, 11, 7)
+        createSettings("Player amount: ", "startPlayerAmount", 2, 11, 4)
+        createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, 4)
         setBody.appendChild(setReturn)
-        html.appendChild(setBody)
 
+        html.appendChild(setBody)
 
         console.log("opening settings...")
         console.log("current game settings: ", gameSettings)
-
-
     }
-    //return the settings
-    return gameSettings
 }
 
 
@@ -84,8 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const title = document.createElement("h1")
     const startBtn = document.createElement("button")
     const settingBtn = document.createElement("button")
-    var gameSettings = {
-        "startCardAmount": 7
+    var gameSettings = { //default settings
+        "startCardAmount": 7,
+        "startPlayerAmount": 4,
+        "startPlusFourAmount": 4
     }
 
 
