@@ -1,115 +1,87 @@
-function isJsEnabled() {
+function isJsEnabled() { //if javascript isn't enabled / there is an error, then nothing will load and the user will be notified that something went wrong. (javacript is not enabled)
     document.querySelector(".js").remove()
 }
 
-function createTitle(text, body) {
+function createTitle(innerHTML, body) { //creates a title underlined
     const title = document.createElement("h1")
-    title.innerHTML = text
+    title.innerHTML = innerHTML
     title.style.textDecoration = "underline"
     body.appendChild(title)
-
 }
 
-function removeBody() {
+function createButton(innerHTML, whatToLoad, gameSettings, body, consoleLog) { //creates a button
+    const button = document.createElement("button")
+    button.innerHTML = innerHTML
+    button.onclick = function () {
+        load(whatToLoad, gameSettings)
+        if (consoleLog !== undefined) {
+        console.log(consoleLog)
+        }
+    }
 
+    body.appendChild(button)
+}
+
+function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, body) {
+    const setAmountP = document.createElement("p")
+    const setAmount = document.createElement("select")
+    setAmountP.innerHTML = text
+    setAmount.onblur = function () {
+        //tells the ammount of the selected value
+        gameSettings[jsontext] = parseInt(setAmount[setAmount.selectedIndex].value)
+        console.log("changed game settings to: ", gameSettings)
+    }
     
+    for (let i = optionStart; i < optionEnd; i++){ //Card amount option slider
+        const setAmountOption = document.createElement("option")
+        setAmountOption.innerHTML = i
+        if (i == selectedOption) {
+            setAmountOption.selected = true
+        }
+        setAmount.append(setAmountOption)
+    }
+    setAmountP.appendChild(setAmount)
+    body.appendChild(setAmountP)
 }
 
-function startGame(settings) {
-    console.log("game started with the following settings: ", settings)
-
-
-
-
-}
-
-function settings(gameSettings) {
-    //remove main page (will be added back)
+function load(menu, gameSettings) { //loads a premade menu
+    //creating important elements to remove / replace
     const html = document.querySelector("html")
-    const mainMenu = document.querySelector("body")
-    mainMenu.remove()
+    const oldBody = document.querySelector("body")
+    const newBody = document.createElement("body")
 
-    //set means settings, so I can differenciate between settings and main page
-    //creating elements for settings
-    const setBody = document.createElement("body")
-    const setReturn = document.createElement("button")
-
-    //allows you to create settings very easily
-    function createSettings(text, jsontext, optionStart, optionEnd, selectedOption) {
-        const setAmountP = document.createElement("p")
-        const setAmount = document.createElement("select")
-        setAmountP.innerHTML = text
-        setAmount.onblur = function () {
-            //tells the ammount of the selected value
-            gameSettings[jsontext] = setAmount[setAmount.selectedIndex].value
-            console.log("changed game settings to: ", gameSettings)
-        }
-        
-        for (let i = optionStart; i < optionEnd; i++){ //Card amount option slider
-            const setAmountOption = document.createElement("option")
-            setAmountOption.innerHTML = i
-            if (i == selectedOption) {
-                setAmountOption.selected = true
-            }
-            setAmount.append(setAmountOption)
-        }
-        setAmountP.appendChild(setAmount)
-        setBody.appendChild(setAmountP)
+    if (menu == "mainMenu") { //if you want to load the main page
+        createTitle("Welcome to UNO!", newBody)
+        createButton("Start Game", "game", gameSettings, newBody)
+        createButton("Change settings", "settings", gameSettings, newBody, "opening settings...")        
     }
 
-    //making the elements do something
-    setReturn.innerHTML = "return"
-    setReturn.onclick = function () {
-        console.log("returning to main Page...")
-        setBody.replaceWith(mainMenu)
+    if (menu == "settings") { //if you want to load the settings
+        createTitle("The Settings", newBody)
+        createSettings("Card start amount: ", "startCardAmount", 2, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
+        createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
+        createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, gameSettings.startPlusFourAmount, newBody)
+        createButton("Return to main menu", "mainMenu", gameSettings, newBody, "returning home...")
     }
 
-    
-    
+    if (menu == "game") {        
+        console.log("game started with the following settings: ", gameSettings)
+        load("mainMenu", gameSettings)
+    }
 
-    //applying the elements
-    createTitle("The Settings", setBody)
-    createSettings("Card start amount: ", "startCardAmount", 2, 11, gameSettings.startCardAmount)
-    createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount)
-    createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, gameSettings.startPlusFourAmount)
-    setBody.appendChild(setReturn)
-
-    html.appendChild(setBody)
-
-    console.log("opening settings...")
-    console.log("current game settings: ", gameSettings)
+    //replacing whatever happened above with the previous body
+    html.appendChild(newBody)
+    oldBody.replaceWith(newBody)
 }
-
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    isJsEnabled()
-
-    //body
-    const body = document.querySelector("body")
-
-    //creating elements for main page
-    const startBtn = document.createElement("button")
-    const settingBtn = document.createElement("button")
     var gameSettings = { //default settings
         "startCardAmount": 7,
         "startPlayerAmount": 4,
         "startPlusFourAmount": 4
     }
 
-
-    //making elements do something
-    startBtn.innerHTML = "Start Game"
-    startBtn.onclick = function () {
-        startGame(gameSettings)
-    }
-    settingBtn.innerHTML = "Settings"
-    settingBtn.onclick = function () {
-        settings(gameSettings)
-    }
-
-    //appending elements
-    createTitle("Welcome to UNO!", body)
-    body.appendChild(startBtn)
-    body.appendChild(settingBtn)
+    isJsEnabled()
+    load("mainMenu", gameSettings)
 })  
