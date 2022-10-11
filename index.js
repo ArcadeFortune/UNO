@@ -17,6 +17,7 @@ var speicalCards = [ //14 special game cards, I am thinking about adding the "Sw
     "g+2", "g↺", "g㊀",
     "y+2", "y↺", "y㊀",
     "d⍟", "d+4",
+    "d⍟", "d+4",
 ]
 
 function isJsEnabled() { //if javascript isn't enabled / there is an error, then nothing will load and the user will be notified that something went wrong. (javacript is not enabled)
@@ -69,30 +70,49 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     body.appendChild(setAmountP)
 }
 
-function createCard(card, body) {
+function createCard(card, body, hasFunction) {
     const button = document.createElement("button")
-    button.style.maxHeight = "50px"
-    button.style.minHeight = "50px"
+    if (hasFunction != undefined) {
+        button.onclick = function () {
+            console.log("you clicked the", card, "card")
+        }
+    }
+   
+    //RENDERS the given card
+    button.style.height = "50px"
+    button.style.width = "30px"
+    button.innerHTML = card.slice(1)
 
-    if (card.includes("r")) {
-        colorCard("red", "r")
+    if (card.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
+        button.style.backgroundColor = "red"
     } else if (card.includes("g")) {
-        colorCard("lightGreen", "g")
+        button.style.backgroundColor = "lightGreen"
     } else if (card.includes("y")) {
-        colorCard("yellow", "y")
+        button.style.backgroundColor = "yellow"
     } else if (card.includes("b")) {
-        colorCard("blue", "b", "white")
+        button.style.backgroundColor = "blue"
+        button.style.color = "white" //make it readable
     } else {
-        colorCard("darkGrey", "d")      
+        button.style.backgroundColor = "darkGrey"
     }
-      
+        
     body.appendChild(button)
+}
 
-    function colorCard(backgroundColor, codeColor, textColor) {
-        button.style.backgroundColor = backgroundColor
-        button.innerHTML = card.slice(codeColor.length)
-        button.style.color = textColor //make it readable
+function createHand(idkHowToCallIt) { //creates X cards according to the set settings
+    let myHand = []
+    if (idkHowToCallIt == undefined) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
+        idkHowToCallIt = 1
     }
+
+    for (let i = 0 + (idkHowToCallIt - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
+        if ((Math.random() * 10) < gameSettings.startLuck) { //Math.random() decides if you get a special cards depending on how high your luck is
+            myHand.push(speicalCards[Math.floor(Math.random() * speicalCards.length)])
+        } else {
+            myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
+        }
+    }
+    return myHand
 }
 
 function createHotbar(myHand, body) {
@@ -103,8 +123,21 @@ function createHotbar(myHand, body) {
         top: 90%;
         transform: translate(-50%, -90%);
     `;
-    myHand.map((card) => createCard(card, p))
+    myHand.map((card) => createCard(card, p, "blabla yes it should have function xd"))
     body.appendChild(p)
+}
+
+function createMiddle(body, card) {
+    const div = document.createElement("div")
+    div.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    `;
+    console.log("BEFORE CREATING THE STARTING CARD, I WOULD LIKE TO KNOW WHAT THE STARTING CARD REALLY IS: ", card.slice(1))
+    card.map((card) => createCard(card, div)) //map turns the array into string. (card is an array)
+    body.appendChild(div)
 }
 
 function load(menu) { //loads a premade menu
@@ -123,24 +156,24 @@ function load(menu) { //loads a premade menu
     if (menu == "settings") { //if you want to load the settings
         createTitle("The Settings", "h1", newBody)
         createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
-        createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
+        createSettings("Total player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
         createSettings("Luck: ", "startLuck", 0, 11, gameSettings.startLuck, newBody)
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
     if (menu == "game") { //if you want the game to start   
         console.log("game started with the following settings: ", gameSettings)
-        let myHand = []
-
-        for (let i = 0; i < gameSettings.startCardAmount; i++) { //draws you the cards
-            if ((Math.random() * 10) < gameSettings.startLuck) { //Math.random() decides if you get a special cards depending on how high your luck is
-                myHand.push(speicalCards[Math.floor(Math.random() * speicalCards.length)])
-            } else{
-                myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
-            }
-        }
-        console.log("your hand:")
+        let myHand = createHand()
+        console.log("your hand:", myHand)
         createHotbar(myHand, newBody)
+        for (let p = 1; p < gameSettings.startPlayerAmount; p++) {
+            console.log("Player", p, "has: ", createHand())
+        }
+        
+        let startingCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
+        console.log("Starting card will be: ", startingCard)
+        createMiddle(newBody, startingCard)
+
         createButton("Temporarily return to main menu", "mainMenu", newBody, "returning home...") //debug
     }
 
