@@ -8,10 +8,14 @@ function isJsEnabled() { //if javascript isn't enabled / there is an error, then
     document.querySelector(".js").remove()
 }
 
-function createTitle(innerHTML, body) { //creates a title underlined
-    const title = document.createElement("h1")
+function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
+    const title = document.createElement(hx)
     title.innerHTML = innerHTML
     title.style.textDecoration = "underline"
+    if (isSubtitle) { //if specified that the title is a subtitle, then we should make it like a real subtitle
+        title.style.marginTop = "-20px"
+        title.style.textDecoration = "none"
+    }
     body.appendChild(title)
 }
 
@@ -57,13 +61,14 @@ function load(menu) { //loads a premade menu
     const newBody = document.createElement("body")
 
     if (menu == "mainMenu") { //if you want to load the main page
-        createTitle("Welcome to UNO!", newBody)
+        createTitle("Welcome to UNO!", "h1", newBody)
+        createTitle("Made by ArcadeFortune, DESPykesfying#3794", "h5", newBody, true)
         createButton("Start Game", "game", newBody)
         createButton("Change settings", "settings", newBody, "opening settings...")        
     }
 
     if (menu == "settings") { //if you want to load the settings
-        createTitle("The Settings", newBody)
+        createTitle("The Settings", "h1", newBody)
         createSettings("Card start amount: ", "startCardAmount", 2, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
         createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
         createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, gameSettings.startPlusFourAmount, newBody)
@@ -84,4 +89,4 @@ function load(menu) { //loads a premade menu
 document.addEventListener("DOMContentLoaded", () => {
     isJsEnabled()
     load("mainMenu")
-})  
+})
