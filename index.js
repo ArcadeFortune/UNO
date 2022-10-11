@@ -11,7 +11,7 @@ var gameCards = [ //40 game cards
     "g0", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9",
 ]
 
-var speicalCards = [ //14 special game cards, I am thinking about adding the "Swap Hands Card" | the letters at the start is the color, r = red, etc. (d = darkGrey)
+var specialCards = [ //14 special game cards, I am thinking about adding the "Swap Hands Card" | the letters at the start is the color, r = red, etc. (d = darkGrey)
     "b+2", "b↺", "b㊀",
     "r+2", "r↺", "r㊀",
     "g+2", "g↺", "g㊀",
@@ -107,7 +107,7 @@ function createHand(idkHowToCallIt) { //creates X cards according to the set set
 
     for (let i = 0 + (idkHowToCallIt - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
         if ((Math.random() * 10) < gameSettings.startLuck) { //Math.random() decides if you get a special cards depending on how high your luck is
-            myHand.push(speicalCards[Math.floor(Math.random() * speicalCards.length)])
+            myHand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
         } else {
             myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
         }
