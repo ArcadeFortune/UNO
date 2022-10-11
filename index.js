@@ -1,8 +1,23 @@
 var gameSettings = { //default settings
     "startCardAmount": 7,
     "startPlayerAmount": 4,
-    "startPlusFourAmount": 4
+    "startLuck": 3,
 }
+
+var gameCards = [ //40 game cards
+    "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9",
+    "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9",
+    "y0", "y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9",
+    "g0", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9",
+]
+
+var speicalCards = [ //14 special game cards, I am thinking about adding the "Swap Hands Card" | the letters at the start is the color, r = red, etc. (d = darkGrey)
+    "b+2", "b↺", "b㊀",
+    "r+2", "r↺", "r㊀",
+    "g+2", "g↺", "g㊀",
+    "y+2", "y↺", "y㊀",
+    "d⍟", "d+4",
+]
 
 function isJsEnabled() { //if javascript isn't enabled / there is an error, then nothing will load and the user will be notified that something went wrong. (javacript is not enabled)
     document.querySelector(".js").remove()
@@ -14,25 +29,25 @@ function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underl
     title.style.textDecoration = "underline"
     if (isSubtitle) { //if specified that the title is a subtitle, then we should make it like a real subtitle
         title.style.marginTop = "-20px"
-        title.style.textDecoration = "none"
+        title.style.textDecoration = "none" //I could shorten the code, but it would be less readable i think
     }
     body.appendChild(title)
 }
 
-function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a button
+function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a button that loads what you want it to load when you create it somewhere
     const button = document.createElement("button")
     button.innerHTML = innerHTML
     button.onclick = function () {
         load(whatToLoad)
         if (consoleLog !== undefined) {
-        console.log(consoleLog)
+            console.log(consoleLog)
         }
     }
 
     body.appendChild(button)
 }
 
-function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, body) {
+function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, body) { //creates a setting that will write into the global setting
     const setAmountP = document.createElement("p")
     const setAmount = document.createElement("select")
     setAmountP.innerHTML = text
@@ -54,6 +69,44 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     body.appendChild(setAmountP)
 }
 
+function createCard(card, body) {
+    const button = document.createElement("button")
+    button.style.maxHeight = "50px"
+    button.style.minHeight = "50px"
+
+    if (card.includes("r")) {
+        colorCard("red", "r")
+    } else if (card.includes("g")) {
+        colorCard("lightGreen", "g")
+    } else if (card.includes("y")) {
+        colorCard("yellow", "y")
+    } else if (card.includes("b")) {
+        colorCard("blue", "b", "white")
+    } else {
+        colorCard("darkGrey", "d")      
+    }
+      
+    body.appendChild(button)
+
+    function colorCard(backgroundColor, codeColor, textColor) {
+        button.style.backgroundColor = backgroundColor
+        button.innerHTML = card.slice(codeColor.length)
+        button.style.color = textColor //make it readable
+    }
+}
+
+function createHotbar(myHand, body) {
+    const p = document.createElement("p")
+    p.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 90%;
+        transform: translate(-50%, -90%);
+    `;
+    myHand.map((card) => createCard(card, p))
+    body.appendChild(p)
+}
+
 function load(menu) { //loads a premade menu
     //creating important elements to remove / replace
     const html = document.querySelector("html")
@@ -69,24 +122,34 @@ function load(menu) { //loads a premade menu
 
     if (menu == "settings") { //if you want to load the settings
         createTitle("The Settings", "h1", newBody)
-        createSettings("Card start amount: ", "startCardAmount", 2, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
+        createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
         createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
-        createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, gameSettings.startPlusFourAmount, newBody)
+        createSettings("Luck: ", "startLuck", 0, 11, gameSettings.startLuck, newBody)
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
-    if (menu == "game") {        
+    if (menu == "game") { //if you want the game to start   
         console.log("game started with the following settings: ", gameSettings)
-        load("mainMenu")
+        let myHand = []
+
+        for (let i = 0; i < gameSettings.startCardAmount; i++) { //draws you the cards
+            if ((Math.random() * 10) < gameSettings.startLuck) { //Math.random() decides if you get a special cards depending on how high your luck is
+                myHand.push(speicalCards[Math.floor(Math.random() * speicalCards.length)])
+            } else{
+                myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
+            }
+        }
+        console.log("your hand:")
+        createHotbar(myHand, newBody)
+        createButton("Temporarily return to main menu", "mainMenu", newBody, "returning home...") //debug
     }
 
     //replacing whatever happened above with the previous body
-    html.appendChild(newBody)
     oldBody.replaceWith(newBody)
 }
 
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
     isJsEnabled()
     load("mainMenu")
 })
