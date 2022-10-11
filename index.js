@@ -20,10 +20,6 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
     "d⍟", "d+4",
 ]
 
-function isJsEnabled() { //if javascript isn't enabled / there is an error, then nothing will load and the user will be notified that something went wrong. (javacript is not enabled)
-    document.querySelector(".js").remove()
-}
-
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
     const title = document.createElement(hx)
     title.innerHTML = innerHTML
@@ -74,7 +70,9 @@ function createCard(card, body, hasFunction) {
     const button = document.createElement("button")
     if (hasFunction != undefined) {
         button.onclick = function () {
-            console.log("you clicked the", card, "card")
+            console.log("you clicked the", card, "card\nremoving card now...")
+            button.remove()
+
         }
     }
    
@@ -135,8 +133,7 @@ function createMiddle(body, card) {
         top: 50%;
         transform: translate(-50%, -50%);
     `;
-    console.log("BEFORE CREATING THE STARTING CARD, I WOULD LIKE TO KNOW WHAT THE STARTING CARD REALLY IS: ", card.slice(1))
-    card.map((card) => createCard(card, div)) //map turns the array into string. (card is an array)
+    createCard(card[0], div) //btw card is an array so you make sure to make the parameter a string
     body.appendChild(div)
 }
 
@@ -148,7 +145,7 @@ function load(menu) { //loads a premade menu
 
     if (menu == "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody)
-        createTitle("Made by ArcadeFortune, DESPykesfying#3794", "h5", newBody, true)
+        createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
         createButton("Start Game", "game", newBody)
         createButton("Change settings", "settings", newBody, "opening settings...")        
     }
@@ -183,6 +180,5 @@ function load(menu) { //loads a premade menu
 
 
 document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
-    isJsEnabled()
     load("mainMenu")
 })
