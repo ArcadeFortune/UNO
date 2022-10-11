@@ -1,3 +1,9 @@
+var gameSettings = { //default settings
+    "startCardAmount": 7,
+    "startPlayerAmount": 4,
+    "startPlusFourAmount": 4
+}
+
 function isJsEnabled() { //if javascript isn't enabled / there is an error, then nothing will load and the user will be notified that something went wrong. (javacript is not enabled)
     document.querySelector(".js").remove()
 }
@@ -9,11 +15,11 @@ function createTitle(innerHTML, body) { //creates a title underlined
     body.appendChild(title)
 }
 
-function createButton(innerHTML, whatToLoad, gameSettings, body, consoleLog) { //creates a button
+function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a button
     const button = document.createElement("button")
     button.innerHTML = innerHTML
     button.onclick = function () {
-        load(whatToLoad, gameSettings)
+        load(whatToLoad)
         if (consoleLog !== undefined) {
         console.log(consoleLog)
         }
@@ -44,7 +50,7 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     body.appendChild(setAmountP)
 }
 
-function load(menu, gameSettings) { //loads a premade menu
+function load(menu) { //loads a premade menu
     //creating important elements to remove / replace
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
@@ -52,8 +58,8 @@ function load(menu, gameSettings) { //loads a premade menu
 
     if (menu == "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", newBody)
-        createButton("Start Game", "game", gameSettings, newBody)
-        createButton("Change settings", "settings", gameSettings, newBody, "opening settings...")        
+        createButton("Start Game", "game", newBody)
+        createButton("Change settings", "settings", newBody, "opening settings...")        
     }
 
     if (menu == "settings") { //if you want to load the settings
@@ -61,12 +67,12 @@ function load(menu, gameSettings) { //loads a premade menu
         createSettings("Card start amount: ", "startCardAmount", 2, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
         createSettings("Player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
         createSettings("[+4] amount: ", "startPlusFourAmount", 0, 9, gameSettings.startPlusFourAmount, newBody)
-        createButton("Return to main menu", "mainMenu", gameSettings, newBody, "returning home...")
+        createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
     if (menu == "game") {        
         console.log("game started with the following settings: ", gameSettings)
-        load("mainMenu", gameSettings)
+        load("mainMenu")
     }
 
     //replacing whatever happened above with the previous body
@@ -76,12 +82,6 @@ function load(menu, gameSettings) { //loads a premade menu
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    var gameSettings = { //default settings
-        "startCardAmount": 7,
-        "startPlayerAmount": 4,
-        "startPlusFourAmount": 4
-    }
-
     isJsEnabled()
-    load("mainMenu", gameSettings)
+    load("mainMenu")
 })  
