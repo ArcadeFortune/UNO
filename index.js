@@ -49,12 +49,11 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     const setAmount = document.createElement("select")
     setAmountP.innerHTML = text
     setAmount.onblur = function () {
-        //tells the ammount of the selected value
-        gameSettings[jsontext] = parseInt(setAmount[setAmount.selectedIndex].value)
+        gameSettings[jsontext] = parseInt(setAmount[setAmount.selectedIndex].value) //sets the new setting
         console.log("changed game settings to: ", gameSettings)
     }
     
-    for (let i = optionStart; i < optionEnd; i++){ //Card amount option slider
+    for (let i = optionStart; i < optionEnd; i++){ //Card amount option picker
         const setAmountOption = document.createElement("option")
         setAmountOption.innerHTML = i
         if (i == selectedOption) {
@@ -66,17 +65,16 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     body.appendChild(setAmountP)
 }
 
-function createCard(card, body, hasFunction) {
+function createCard(card, body, playableHand, realBody) { //RENDERS the given card
     const button = document.createElement("button")
-    if (hasFunction != undefined) {
+    if (playableHand != undefined) {
         button.onclick = function () {
-            console.log("you clicked the", card, "card\nremoving card now...")
-            button.remove()
-
+            console.log(card)
+            playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
         }
     }
    
-    //RENDERS the given card
+    
     button.style.height = "50px"
     button.style.width = "30px"
     button.innerHTML = card.slice(1)
@@ -113,16 +111,36 @@ function createHand(idkHowToCallIt) { //creates X cards according to the set set
     return myHand
 }
 
+function playCard(card, myHand, body) {
+    console.log("Plyaing card", card)
+    console.log(myHand.indexOf(card)) //card
+    myHand.splice(myHand.indexOf(card), 1)
+    document.querySelector("#hotbar").remove()  
+    console.log("myHand: ", myHand)
+    console.log("body: ", body)
+    createHotbar(myHand, body)
+}
+
 function createHotbar(myHand, body) {
     const p = document.createElement("p")
+    p.id = "hotbar"
     p.style.cssText = `
         position: absolute;
         left: 50%;
         top: 90%;
         transform: translate(-50%, -90%);
     `;
-    myHand.map((card) => createCard(card, p, "blabla yes it should have function xd"))
+    myHand.map((card) => createCard(card, p, myHand, body))
     body.appendChild(p)
+    checkIfWon(myHand)
+    return p
+}
+
+function checkIfWon(hand) {
+    if (hand.length === 0) {
+        console.log("no more cards left.")
+        load("victory")
+    }
 }
 
 function createMiddle(body, card) {
@@ -146,7 +164,7 @@ function load(menu) { //loads a premade menu
     if (menu == "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
-        createButton("Start Game", "game", newBody)
+        createButton("Start Game", "game", newBody, "starting game...")
         createButton("Change settings", "settings", newBody, "opening settings...")        
     }
 
@@ -158,20 +176,34 @@ function load(menu) { //loads a premade menu
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
-    if (menu == "game") { //if you want the game to start   
-        console.log("game started with the following settings: ", gameSettings)
+    if (menu == "game") { //if you want the game to start
         let myHand = createHand()
-        console.log("your hand:", myHand)
+        console.log("this is my hand: ", myHand)
+        //need to create hands for bots
         createHotbar(myHand, newBody)
-        for (let p = 1; p < gameSettings.startPlayerAmount; p++) {
-            console.log("Player", p, "has: ", createHand())
-        }
+
+
+
+
+
+    //     console.log("your hand:", myHand)
+    //     createHotbar(myHand, newBody)
+    //     for (let p = 1; p < gameSettings.startPlayerAmount; p++) {
+    //         console.log("Player", p, "has: ", createHand())
+    //     }
         
-        let startingCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
-        console.log("Starting card will be: ", startingCard)
-        createMiddle(newBody, startingCard)
+    //     let startingCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
+    //     console.log("Starting card will be: ", startingCard)
+        createMiddle(newBody, createHand(gameSettings.startCardAmount))
 
         createButton("Temporarily return to main menu", "mainMenu", newBody, "returning home...") //debug
+
+        
+    }
+
+    if (menu === "victory") { //if you want the vicotry screen
+        createTitle("You won!!!", "h1", newBody)
+        createButton("YAY!", "mainMenu", newBody, "returning to main menu...")
     }
 
     //replacing whatever happened above with the previous body
@@ -180,5 +212,5 @@ function load(menu) { //loads a premade menu
 
 
 document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
-    load("mainMenu")
+    load("game")
 })
