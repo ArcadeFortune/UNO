@@ -69,7 +69,6 @@ function createCard(card, body, playableHand, realBody) { //RENDERS the given ca
     const button = document.createElement("button")
     if (playableHand != undefined) {
         button.onclick = function () {
-            console.log(card)
             playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
         }
     }
@@ -113,12 +112,11 @@ function createHand(idkHowToCallIt) { //creates X cards according to the set set
 
 function playCard(card, myHand, body) {
     console.log("Plyaing card", card)
-    console.log(myHand.indexOf(card)) //card
+    // console.log(myHand.indexOf(card)) //card
     myHand.splice(myHand.indexOf(card), 1)
-    document.querySelector("#hotbar").remove()  
-    console.log("myHand: ", myHand)
-    console.log("body: ", body)
+    document.querySelector("#hotbar").remove()
     createHotbar(myHand, body)
+    createMiddle(body, [card])
 }
 
 function createHotbar(myHand, body) {
@@ -145,6 +143,7 @@ function checkIfWon(hand) {
 
 function createMiddle(body, card) {
     const div = document.createElement("div")
+    div.classList.add("middleCard")
     div.style.cssText = `
         position: absolute;
         left: 50%;
@@ -152,7 +151,15 @@ function createMiddle(body, card) {
         transform: translate(-50%, -50%);
     `;
     createCard(card[0], div) //btw card is an array so you make sure to make the parameter a string
-    body.appendChild(div)
+    if (document.querySelectorAll(".middleCard").length > 0) { //if its not the first card being rendered:
+        let rng = Math.random() * 10
+        if (Math.random() > 0.5) {
+            rng *= -1
+        }
+        console.log(rng)
+        div.style.rotate = rng + "deg" //changes the next card rotation. (between -10 and 10 degrees)
+    }
+    body.appendChild(div) 
 }
 
 function load(menu) { //loads a premade menu
@@ -178,27 +185,14 @@ function load(menu) { //loads a premade menu
 
     if (menu == "game") { //if you want the game to start
         let myHand = createHand()
-        console.log("this is my hand: ", myHand)
-        //need to create hands for bots
+        let startingCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
+        console.log("Starting card will be: ", startingCard)
         createHotbar(myHand, newBody)
-
-
-
-
-
-    //     console.log("your hand:", myHand)
-    //     createHotbar(myHand, newBody)
-    //     for (let p = 1; p < gameSettings.startPlayerAmount; p++) {
-    //         console.log("Player", p, "has: ", createHand())
-    //     }
-        
-    //     let startingCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
-    //     console.log("Starting card will be: ", startingCard)
         createMiddle(newBody, createHand(gameSettings.startCardAmount))
-
-        createButton("Temporarily return to main menu", "mainMenu", newBody, "returning home...") //debug
-
-        
+        //     need to create hands for bots
+        //     for (let p = 1; p < gameSettings.startPlayerAmount; p++) {
+        //         console.log("Player", p, "has: ", createHand())
+        //     }
     }
 
     if (menu === "victory") { //if you want the vicotry screen
@@ -212,5 +206,5 @@ function load(menu) { //loads a premade menu
 
 
 document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
-    load("game")
+    load("mainMenu")
 })
