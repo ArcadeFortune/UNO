@@ -20,6 +20,10 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
     "d⍟", "d+4",
 ]
 
+var turn = 0
+
+var middleCard
+
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
     const title = document.createElement(hx)
     title.innerHTML = innerHTML
@@ -35,10 +39,10 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
     const button = document.createElement("button")
     button.innerHTML = innerHTML
     button.onclick = function () {
-        load(whatToLoad)
         if (consoleLog !== undefined) {
             console.log(consoleLog)
         }
+        load(whatToLoad)
     }
 
     body.appendChild(button)
@@ -65,14 +69,24 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     body.appendChild(setAmountP)
 }
 
+function isPlayable(card) { //checks if the card has the same color or number or is dark
+    if (middleCard.includes(card.slice(0, 1)) || middleCard.includes(card.slice(1, 3)) || card.slice(0, 1) === "d") {
+        console.log("ALLOWED")
+    } else {
+        console.log("NOT ALLOWED BUT IT WILL BE FIXED SOON")
+    }
+}
+
 function createCard(card, body, playableHand, realBody) { //RENDERS the given card
     const button = document.createElement("button")
     if (playableHand != undefined) {
         button.onclick = function () {
+            if (isPlayable(card)) {
+                console.log("card is playable")
+            }
             playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
         }
     }
-   
     
     button.style.height = "50px"
     button.style.width = "30px"
@@ -92,31 +106,35 @@ function createCard(card, body, playableHand, realBody) { //RENDERS the given ca
     }
         
     body.appendChild(button)
+    return card
 }
 
 function createHand(idkHowToCallIt) { //creates X cards according to the set settings
-    let myHand = []
+    let myHand = {}
+    myHand.hand = []
     if (idkHowToCallIt == undefined) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
         idkHowToCallIt = 1
     }
 
     for (let i = 0 + (idkHowToCallIt - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
         if ((Math.random() * 10) < gameSettings.startLuck) { //Math.random() decides if you get a special cards depending on how high your luck is
-            myHand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
+            myHand.hand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
         } else {
-            myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
+            myHand.hand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
         }
     }
     return myHand
 }
 
-function playCard(card, myHand, body) {
-    console.log("Plyaing card", card)
+function playCard(card, myHand, body) { //card here is also an array
+    console.log("Playing card", card)
     // console.log(myHand.indexOf(card)) //card
-    myHand.splice(myHand.indexOf(card), 1)
+    myHand.hand.splice(myHand.hand.indexOf(card), 1)
     document.querySelector("#hotbar").remove()
     createHotbar(myHand, body)
-    createMiddle(body, [card])
+    createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
+    // switchTurn() //needs to be implemented with bots
+    // console.log("current turn: ", turn)
 }
 
 function createHotbar(myHand, body) {
@@ -128,20 +146,20 @@ function createHotbar(myHand, body) {
         top: 90%;
         transform: translate(-50%, -90%);
     `;
-    myHand.map((card) => createCard(card, p, myHand, body))
+    myHand.hand.map((card) => createCard(card, p, myHand, body))
     body.appendChild(p)
     checkIfWon(myHand)
     return p
 }
 
 function checkIfWon(hand) {
-    if (hand.length === 0) {
+    if (hand.hand.length === 0) {
         console.log("no more cards left.")
         load("victory")
     }
 }
 
-function createMiddle(body, card) {
+function createMiddle(body, card) { //card here is an array
     const div = document.createElement("div")
     div.classList.add("middleCard")
     div.style.cssText = `
@@ -150,16 +168,20 @@ function createMiddle(body, card) {
         top: 50%;
         transform: translate(-50%, -50%);
     `;
-    createCard(card[0], div) //btw card is an array so you make sure to make the parameter a string
+
+    middleCard = createCard(card[0], div) //btw card is an array so you make sure to make the parameter a string
     if (document.querySelectorAll(".middleCard").length > 0) { //if its not the first card being rendered:
         let rng = Math.random() * 10
-        if (Math.random() > 0.5) {
+        if (Math.random() > 0.5) { //gives it some rotation to the otherside
             rng *= -1
         }
-        console.log(rng)
         div.style.rotate = rng + "deg" //changes the next card rotation. (between -10 and 10 degrees)
     }
     body.appendChild(div) 
+}
+
+function switchTurn() {
+    turn += 1
 }
 
 function load(menu) { //loads a premade menu
@@ -184,15 +206,31 @@ function load(menu) { //loads a premade menu
     }
 
     if (menu == "game") { //if you want the game to start
-        let myHand = createHand()
-        let startingCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
-        console.log("Starting card will be: ", startingCard)
+        let myHand = createHand() //creating
+        console.log("This is you hand: ", myHand.hand)
+        for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
+        }
+        middleCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
+        console.log("Starting card will be: ", middleCard.hand[0])
+
+        createMiddle(newBody, middleCard.hand)
+
         createHotbar(myHand, newBody)
-        createMiddle(newBody, createHand(gameSettings.startCardAmount))
-        //     need to create hands for bots
-        //     for (let p = 1; p < gameSettings.startPlayerAmount; p++) {
-        //         console.log("Player", p, "has: ", createHand())
-        //     }
+
+
+
+        // //     need to create hands for bots
+
+        // let nr = 8
+        // console.log("testing creating variables")
+        // nr = "test"
+        // let p2 = createHand()
+        // console.log("here mainPlayer: ", myHand)
+        // console.log("here p2: ", p2)
+        // console.log("old turn: ", turn)
+        // switchTurn()
+        
+
     }
 
     if (menu === "victory") { //if you want the vicotry screen
