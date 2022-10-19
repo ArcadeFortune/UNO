@@ -71,20 +71,32 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
 
 function isPlayable(card) { //checks if the card has the same color or number or is dark
     if (middleCard.includes(card.slice(0, 1)) || middleCard.includes(card.slice(1, 3)) || card.slice(0, 1) === "d") {
-        console.log("ALLOWED")
+        return true
     } else {
-        console.log("NOT ALLOWED BUT IT WILL BE FIXED SOON")
+        return false
     }
 }
 
-function createCard(card, body, playableHand, realBody) { //RENDERS the given card
+function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS the given card
+    //card is a string remeber!!
     const button = document.createElement("button")
-    if (playableHand != undefined) {
+    if (typeof playableHand === 'object' && givesCard === undefined) {
         button.onclick = function () {
             if (isPlayable(card)) {
-                console.log("card is playable")
+                playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
+            } else {                
+                console.log("not allowed to play, try picking a card")
             }
-            playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
+        }
+    } else if (givesCard !== undefined) {
+        button.onclick = function () {
+        console.log("it is a string", playableHand.hand)        
+        let myCard = createHand(gameSettings.startCardAmount) 
+        console.log("myCard: ", myCard)
+        playableHand.hand.push(myCard.hand[0])
+        console.log("it is a string", playableHand.hand)        
+        document.querySelector("#hotbar").remove()
+        createHotbar(playableHand, realBody)
         }
     }
     
@@ -184,6 +196,20 @@ function switchTurn() {
     turn += 1
 }
 
+function createSideMiddle(myHand, body) {
+    const div = document.createElement("div")
+    div.classList.add("middleCard")
+    div.style.cssText = `
+        position: absolute;
+        left: 30%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    `;
+    createCard("✞✦", div , myHand, body, true) //the render removes the first letter btw
+    
+    body.appendChild(div) 
+}
+
 function load(menu) { //loads a premade menu
     //creating important elements to remove / replace
     const html = document.querySelector("html")
@@ -217,7 +243,7 @@ function load(menu) { //loads a premade menu
 
         createHotbar(myHand, newBody)
 
-
+        createSideMiddle(myHand, newBody) //to collect cards when you cant play a card
 
         // //     need to create hands for bots
 
@@ -244,5 +270,5 @@ function load(menu) { //loads a premade menu
 
 
 document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
-    load("mainMenu")
+    load("game")
 })
