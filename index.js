@@ -1,7 +1,7 @@
 var gameSettings = { //default settings
     "startCardAmount": 7,
     "startPlayerAmount": 4,
-    "startLuck": 3,
+    "startLuck": 10,
 }
 
 var gameCards = [ //40 game cards
@@ -24,6 +24,10 @@ var turn = 0
 
 var middleCard
 
+function remove(querySelector) { //usefull to remove html elements
+    document.querySelector(querySelector).remove()
+}
+
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
     const title = document.createElement(hx)
     title.innerHTML = innerHTML
@@ -32,6 +36,7 @@ function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underl
         title.style.marginTop = "-20px"
         title.style.textDecoration = "none" //I could shorten the code, but it would be less readable i think
     }
+
     body.appendChild(title)
 }
 
@@ -65,60 +70,9 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
         }
         setAmount.append(setAmountOption)
     }
+
     setAmountP.appendChild(setAmount)
     body.appendChild(setAmountP)
-}
-
-function isPlayable(card) { //checks if the card has the same color or number or is dark
-    if (middleCard.includes(card.slice(0, 1)) || middleCard.includes(card.slice(1, 3)) || card.slice(0, 1) === "d") {
-        return true
-    } else {
-        return false
-    }
-}
-
-function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS the given card
-    //card is a string remeber!!
-    const button = document.createElement("button")
-    if (typeof playableHand === 'object' && givesCard === undefined) {
-        button.onclick = function () {
-            if (isPlayable(card)) {
-                playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
-            } else {                
-                console.log("not allowed to play, try picking a card")
-            }
-        }
-    } else if (givesCard !== undefined) {
-        button.onclick = function () {
-        console.log("it is a string", playableHand.hand)        
-        let myCard = createHand(gameSettings.startCardAmount) 
-        console.log("myCard: ", myCard)
-        playableHand.hand.push(myCard.hand[0])
-        console.log("it is a string", playableHand.hand)        
-        document.querySelector("#hotbar").remove()
-        createHotbar(playableHand, realBody)
-        }
-    }
-    
-    button.style.height = "50px"
-    button.style.width = "30px"
-    button.innerHTML = card.slice(1)
-
-    if (card.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
-        button.style.backgroundColor = "red"
-    } else if (card.includes("g")) {
-        button.style.backgroundColor = "lightGreen"
-    } else if (card.includes("y")) {
-        button.style.backgroundColor = "yellow"
-    } else if (card.includes("b")) {
-        button.style.backgroundColor = "blue"
-        button.style.color = "white" //make it readable
-    } else {
-        button.style.backgroundColor = "darkGrey"
-    }
-        
-    body.appendChild(button)
-    return card
 }
 
 function createHand(idkHowToCallIt) { //creates X cards according to the set settings
@@ -135,40 +89,8 @@ function createHand(idkHowToCallIt) { //creates X cards according to the set set
             myHand.hand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
         }
     }
+
     return myHand
-}
-
-function playCard(card, myHand, body) { //card here is also an array
-    console.log("Playing card", card)
-    // console.log(myHand.indexOf(card)) //card
-    myHand.hand.splice(myHand.hand.indexOf(card), 1)
-    document.querySelector("#hotbar").remove()
-    createHotbar(myHand, body)
-    createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
-    // switchTurn() //needs to be implemented with bots
-    // console.log("current turn: ", turn)
-}
-
-function createHotbar(myHand, body) {
-    const p = document.createElement("p")
-    p.id = "hotbar"
-    p.style.cssText = `
-        position: absolute;
-        left: 50%;
-        top: 90%;
-        transform: translate(-50%, -90%);
-    `;
-    myHand.hand.map((card) => createCard(card, p, myHand, body))
-    body.appendChild(p)
-    checkIfWon(myHand)
-    return p
-}
-
-function checkIfWon(hand) {
-    if (hand.hand.length === 0) {
-        console.log("no more cards left.")
-        load("victory")
-    }
 }
 
 function createMiddle(body, card) { //card here is an array
@@ -189,11 +111,86 @@ function createMiddle(body, card) { //card here is an array
         }
         div.style.rotate = rng + "deg" //changes the next card rotation. (between -10 and 10 degrees)
     }
+
+    console.log("created middlecard: ", middleCard)
     body.appendChild(div) 
 }
 
-function switchTurn() {
-    turn += 1
+function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS the given card
+    //card is a string remeber!!
+    const button = document.createElement("button")
+    if (typeof playableHand === 'object' && givesCard === undefined) {
+        button.onclick = function () {
+            if (isPlayable(card)) {
+                playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
+            } else {                
+                console.log("not allowed to play, try picking a card")
+            }
+        }
+    } else if (givesCard !== undefined) {
+        button.onclick = function () {
+        console.log("it is a string", playableHand.hand)        
+        let myCard = createHand(gameSettings.startCardAmount) 
+        console.log("myCard: ", myCard)
+        playableHand.hand.push(myCard.hand[0])
+        console.log("it is a string", playableHand.hand)      
+        remove("#hotbar")
+        createHotbar(playableHand, realBody)
+        }
+    }    
+    button.style.height = "50px"
+    button.style.width = "30px"
+    button.innerHTML = card.slice(1)
+    colorIt(card, button)
+        
+    body.appendChild(button)
+    return card
+}
+
+function isPlayable(card) { //checks if the card has the same color or number or is dark
+    if (middleCard.includes(card.slice(0, 1)) || middleCard.includes(card.slice(1, 3)) || card.slice(0, 1) === "d") {
+        return true
+    } else {
+        return false
+    }
+}
+
+function playCard(card, myHand, body) { //card here is also an array
+    console.log("Playing card", card)
+    // console.log(myHand.indexOf(card)) //card
+    myHand.hand.splice(myHand.hand.indexOf(card), 1)
+    remove("#hotbar")
+    if (card.slice(0, 1) === "d") {
+        chooseColor(body, myHand, card.slice(1, 696969))
+    }
+    createHotbar(myHand, body)
+    createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
+    
+    checkIfWon(myHand)
+    // switchTurn() //needs to be implemented with bots
+    // console.log("current turn: ", turn)
+}
+
+function createHotbar(myHand, body) {
+    const p = document.createElement("p")
+    p.id = "hotbar"
+    p.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 90%;
+        transform: translate(-50%, -90%);
+    `;
+    myHand.hand.map((card) => createCard(card, p, myHand, body))
+    body.appendChild(p)
+
+    return p
+}
+
+function checkIfWon(hand) {
+    if (hand.hand.length === 0) {
+        console.log("no more cards left.")
+        load("victory")
+    }
 }
 
 function createSideMiddle(myHand, body) {
@@ -210,20 +207,79 @@ function createSideMiddle(myHand, body) {
     body.appendChild(div) 
 }
 
+function colorIt(colorString, what) {
+    if (colorString.includes("g")) {
+        what.style.backgroundColor = "lightGreen"
+    } else if (colorString.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
+        what.style.backgroundColor = "red"
+    } else if (colorString.includes("y")) {
+        what.style.backgroundColor = "yellow"
+    } else if (colorString.includes("b")) {
+        what.style.backgroundColor = "blue"
+        what.style.color = "white" //make it readable
+    } else {
+        what.style.backgroundColor = "darkGrey"
+    }
+}
+
+function chooseColor(body, hand, number) {
+    console.log("you can choose a color!")
+    const chooserDiv = document.createElement("div")
+    chooserDiv.id = "chooserDiv"
+    chooserDiv.style.cssText = `
+        background-color: red;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        height: 200px;
+        width: 200px;
+    `;
+    createChooseButton("red", chooserDiv, hand, number)
+    createChooseButton("blue", chooserDiv, hand, number)
+    createChooseButton("green", chooserDiv, hand, number)
+    createChooseButton("yellow", chooserDiv, hand, number)
+
+    body.appendChild(chooserDiv)
+}
+
+function createChooseButton(color, div, hand, number) { //make sure color is a css accepted string
+    const chooseColor = document.createElement("button")
+    chooseColor.innerHTML = "CHOOSE " + color.toUpperCase()
+    chooseColor.style.cssText = `
+        height: 100px;
+        width: 100px;
+    `;
+    chooseColor.onclick = function() {
+        const card = color.slice(0, 1) + number //for playing the card by making it the correct color
+        console.log("you chose the color", color, "as the hand:", hand)
+        hand.hand.push("filler card because playCard() requires food")
+        playCard(card, hand, document.querySelector("body")) //i couldnt bother writing more paramteres for the body
+        remove("#chooserDiv")
+    }
+    colorIt(color, chooseColor) //color it
+
+    div.appendChild(chooseColor)
+}
+
+function switchTurn() {
+    turn += 1
+}
+
 function load(menu) { //loads a premade menu
     //creating important elements to remove / replace
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
     const newBody = document.createElement("body")
 
-    if (menu == "mainMenu") { //if you want to load the main page
+    if (menu === "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
         createButton("Start Game", "game", newBody, "starting game...")
         createButton("Change settings", "settings", newBody, "opening settings...")        
     }
 
-    if (menu == "settings") { //if you want to load the settings
+    if (menu === "settings") { //if you want to load the settings
         createTitle("The Settings", "h1", newBody)
         createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
         createSettings("Total player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
@@ -231,7 +287,7 @@ function load(menu) { //loads a premade menu
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
-    if (menu == "game") { //if you want the game to start
+    if (menu === "game") { //if you want the game to start
         let myHand = createHand() //creating
         console.log("This is you hand: ", myHand.hand)
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
@@ -254,8 +310,7 @@ function load(menu) { //loads a premade menu
         // console.log("here mainPlayer: ", myHand)
         // console.log("here p2: ", p2)
         // console.log("old turn: ", turn)
-        // switchTurn()
-        
+        // switchTurn()       
 
     }
 
@@ -270,5 +325,5 @@ function load(menu) { //loads a premade menu
 
 
 document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
-    load("game")
+    load("mainMenu")
 })
