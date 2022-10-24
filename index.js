@@ -234,7 +234,9 @@ function chooseColor(body, hand, number) {
         transform: translate(-50%, -50%);
         height: 200px;
         width: 200px;
+        z-index: 1;
     `;
+    //z-index makes it override everything else
     createChooseButton("red", chooserDiv, hand, number)
     createChooseButton("blue", chooserDiv, hand, number)
     createChooseButton("green", chooserDiv, hand, number)
