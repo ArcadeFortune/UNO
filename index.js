@@ -75,21 +75,27 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     body.appendChild(setAmountP)
 }
 
-function createHand(idkHowToCallIt) { //creates X cards according to the set settings
+function createHand(isMiddle) { //creates X cards according to the set settings
     let myHand = {}
     myHand.hand = []
-    if (idkHowToCallIt == undefined) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
-        idkHowToCallIt = 1
+    if (isMiddle === true) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
+        isMiddle = gameSettings.startCardAmount
+    } else {
+        isMiddle = 1
     }
+        console.log(isMiddle)
 
-    for (let i = 0 + (idkHowToCallIt - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
-        if ((Math.random() * 10) < gameSettings.startLuck) { //Math.random() decides if you get a special cards depending on how high your luck is
+    for (let i = 0 + (isMiddle - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
+        if ((Math.random() * 10) < gameSettings.startLuck && isMiddle == 1) { //Math.random() decides if you get a special cards depending on how high your luck is
             myHand.hand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
-        } else {
+            console.log("SADJ:ASDL")
+        }
+        else {
+            console.log("sdaaaaa")
             myHand.hand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
         }
     }
-
+    console.log(myHand)
     return myHand
 }
 
@@ -130,7 +136,7 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
     } else if (givesCard !== undefined) {
         button.onclick = function () {
         console.log("it is a string", playableHand.hand)        
-        let myCard = createHand(gameSettings.startCardAmount) 
+        let myCard = createHand(true) 
         console.log("myCard: ", myCard)
         playableHand.hand.push(myCard.hand[0])
         console.log("it is a string", playableHand.hand)      
@@ -294,7 +300,7 @@ function load(menu) { //loads a premade menu
         console.log("This is you hand: ", myHand.hand)
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
         }
-        middleCard = createHand(gameSettings.startCardAmount) //parameter makes it only draw 1 random card
+        middleCard = createHand(true) //parameter makes it only draw 1 random card
         console.log("Starting card will be: ", middleCard.hand[0])
 
         createMiddle(newBody, middleCard.hand)
