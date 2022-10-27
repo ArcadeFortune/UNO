@@ -1,3 +1,4 @@
+
 var gameSettings = { //default settings
     "startCardAmount": 7,
     "startPlayerAmount": 4,
@@ -23,7 +24,6 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
 var turn
 
 var middleCard
-
 function remove(querySelector) { //usefull to remove html elements
     document.querySelector(querySelector).remove()
 }
@@ -51,7 +51,7 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
         if (consoleLog !== undefined) {
             console.log(consoleLog)
         }
-        load(whatToLoad)
+        window.location.href = "/UNO/" + whatToLoad
     }
 
     body.appendChild(button)
@@ -85,7 +85,7 @@ function createForm(body) {
     div.id = "login"
     div.style.width = "170px"
 
-    form.action = "test.php"
+    form.action = "/UNO/test.php"
     form.method = "post"
 
     createLogin("username", form)
@@ -109,7 +109,7 @@ function createLogin(type, body) {
     login.placeholder = "Enter " + firstCapital(type)
     login.name = type
     login.type = type
-    login.required = true
+    login.required = false
 
     // login.appendChild(label)
     body.appendChild(label)
@@ -346,11 +346,20 @@ function load(menu) { //loads a premade menu
     const newBody = document.createElement("body")
 
     if (menu === "mainMenu") { //if you want to load the main page
+        console.log("test", gameSettings)
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
         createButton("Start Game", "game", newBody, "starting game...")
         createButton("Change settings", "settings", newBody, "opening settings...")    
-        createButton("Login", "login", newBody, "Logging in")    
+        createButton("Login", "login", newBody, "Logging in") 
+        
+        const btn = document.createElement("button")
+        btn.innerHTML = "secret dev route"
+        btn.onclick = function() {
+            window.location.href = "/UNO/settings.php"
+        }
+        newBody.appendChild(btn)
+
     }
 
     if (menu === "settings") { //if you want to load the settings
@@ -402,8 +411,3 @@ function load(menu) { //loads a premade menu
     //replacing whatever happened above with the previous body
     oldBody.replaceWith(newBody)
 }
-
-
-document.addEventListener("DOMContentLoaded", () => { //cleanest DOMContentLoaded ever
-    load("login")
-})
