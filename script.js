@@ -54,7 +54,7 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
         if (consoleLog !== undefined) {
             console.log(consoleLog)
         }
-        window.location.href = "../" + whatToLoad + "/index.php"
+        window.location.href = "../" + whatToLoad + "/"
     }
 
     body.appendChild(button)
