@@ -214,7 +214,11 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
 
 function isPlayable(card) { //checks if the card has the same color or number or is dark
     if (middleCard.includes(card.slice(0, 1)) || middleCard.includes(card.slice(1, 3)) || card.slice(0, 1) === "d") {
-        return true
+        if (middleCard.slice(0, 1) === "d") { //so u can't play a dark card while choosing
+            return false
+        } else{
+            return true
+        }
     } else {
         return false
     }
