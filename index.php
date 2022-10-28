@@ -8,11 +8,9 @@
     </head>
     <body>
         <script>
-            var gameSettings = { //default settings
-                "startCardAmount": 7,
-                "startPlayerAmount": 4,
-                "startLuck": 4,
-            }
-        </script>
+            localStorage.setItem("startCardAmount", "7")
+            localStorage.setItem("startPlayerAmount", "4")
+            localStorage.setItem("startLuck", "4")
+            </script>
     </body>
 </html>

@@ -1,8 +1,11 @@
-
+// if (performance.navigation.type == performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
+//     window.localStorage.clear() //will clear localStorage
+//     window.location.href = "/" //will go back to index.php
+// }
 var gameSettings = { //default settings
-    "startCardAmount": 7,
-    "startPlayerAmount": 4,
-    "startLuck": 4,
+    "startCardAmount": localStorage.getItem("startCardAmount"),
+    "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
+    "startLuck": localStorage.getItem("startLuck"),
 }
 
 var gameCards = [ //40 game cards
@@ -21,14 +24,14 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
     "d⍟", "d+4",
 ]
 
-var turn
+//var turn
 
 var middleCard
 function remove(querySelector) { //usefull to remove html elements
     document.querySelector(querySelector).remove()
 }
 
-function firstCapital(string) {
+function firstCapital(string) { //usefull to capitalize the first letter in a string
     return string[0].toUpperCase() + string.substring(1)
 }
 
@@ -62,7 +65,7 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
     const setAmount = document.createElement("select")
     setAmountP.innerHTML = text
     setAmount.onblur = function () {
-        gameSettings[jsontext] = parseInt(setAmount[setAmount.selectedIndex].value) //sets the new setting
+        window.localStorage.setItem(jsontext, setAmount[setAmount.selectedIndex].value)//sets the new setting
         console.log("changed game settings to: ", gameSettings)
     }
     
@@ -72,6 +75,7 @@ function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, 
         if (i == selectedOption) {
             setAmountOption.selected = true
         }
+
         setAmount.append(setAmountOption)
     }
 
@@ -92,8 +96,7 @@ function createForm(body) {
     createLogin("password", form)
     createSubmitButton(form)
     createRemeberButton(form)
-    
-    // createLogin("email", div)
+
     div.appendChild(form)
     body.appendChild(div)
 }
@@ -114,7 +117,6 @@ function createLogin(type, body) {
     // login.appendChild(label)
     body.appendChild(label)
     body.appendChild(login)
-
 }
 
 function createSubmitButton(body) {
@@ -145,22 +147,17 @@ function createHand(isMiddle, allowSpecial) { //creates X cards according to the
     } else {
         isMiddle = 1
     }
-        console.log(isMiddle)
-
     for (let i = 0 + (isMiddle - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
         if (allowSpecial === true) {
-            isMiddle = 1
+            isMiddle = 1 //so the cardgiver gives one card and allows special
         }
         if ((Math.random() * 10) < gameSettings.startLuck && isMiddle == 1) { //Math.random() decides if you get a special cards depending on how high your luck is
             myHand.hand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
-            console.log("SADJ:ASDL")
         }
         else {
-            console.log("sdaaaaa")
             myHand.hand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
         }
     }
-    console.log(myHand)
     return myHand
 }
 
@@ -172,8 +169,8 @@ function createMiddle(body, card) { //card here is an array
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-    `;
-
+    `
+    
     middleCard = createCard(card[0], div) //btw card is an array so you make sure to make the parameter a string
     if (document.querySelectorAll(".middleCard").length > 0) { //if its not the first card being rendered:
         let rng = Math.random() * 10
@@ -183,7 +180,6 @@ function createMiddle(body, card) { //card here is an array
         div.style.rotate = rng + "deg" //changes the next card rotation. (between -10 and 10 degrees)
     }
 
-    console.log("created middlecard: ", middleCard)
     body.appendChild(div) 
 }
 
@@ -195,18 +191,16 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
             if (isPlayable(card)) {
                 playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
             } else {                
-                console.log("not allowed to play, try picking a card")
+                console.log("Not allowed to play, try picking another card!")
             }
         }
     } else if (givesCard !== undefined) {
         button.onclick = function () {
-        console.log("it is a string", playableHand.hand)        
-        let myCard = createHand(true, true) 
-        console.log("myCard: ", myCard)
-        playableHand.hand.push(myCard.hand[0])
-        console.log("it is a string", playableHand.hand)      
-        remove("#hotbar")
-        createHotbar(playableHand, realBody)
+            let myCard = createHand(true, true) 
+            console.log("You picked the card", myCard.hand[0] + "!")
+            playableHand.hand.push(myCard.hand[0])
+            remove("#hotbar")
+            createHotbar(playableHand, realBody)
         }
     }    
     button.style.height = "50px"
@@ -228,7 +222,6 @@ function isPlayable(card) { //checks if the card has the same color or number or
 
 function playCard(card, myHand, body) { //card here is also an array
     console.log("Playing card", card)
-    // console.log(myHand.indexOf(card)) //card
     myHand.hand.splice(myHand.hand.indexOf(card), 1)
     remove("#hotbar")
     if (card.slice(0, 1) === "d") {
@@ -250,7 +243,7 @@ function createHotbar(myHand, body) {
         left: 50%;
         top: 90%;
         transform: translate(-50%, -90%);
-    `;
+    `
     myHand.hand.map((card) => createCard(card, p, myHand, body))
     body.appendChild(p)
 
@@ -259,7 +252,7 @@ function createHotbar(myHand, body) {
 
 function checkIfWon(hand) {
     if (hand.hand.length === 0) {
-        console.log("no more cards left.")
+        console.log("You WON!!")
         load("victory")
     }
 }
@@ -272,7 +265,7 @@ function createSideMiddle(myHand, body) {
         left: 30%;
         top: 50%;
         transform: translate(-50%, -50%);
-    `;
+    `
     createCard("✞✦", div , myHand, body, true) //the render removes the first letter btw
     
     body.appendChild(div) 
@@ -294,7 +287,7 @@ function colorIt(colorString, what) {
 }
 
 function chooseColor(body, hand, number) {
-    console.log("you can choose a color!")
+    console.log("Choose a color!")
     const chooserDiv = document.createElement("div")
     chooserDiv.id = "chooserDiv"
     chooserDiv.style.cssText = `
@@ -306,7 +299,7 @@ function chooseColor(body, hand, number) {
         height: 200px;
         width: 200px;
         z-index: 1;
-    `;
+    `
     //z-index makes it override everything else
     createChooseButton("red", chooserDiv, hand, number)
     createChooseButton("blue", chooserDiv, hand, number)
@@ -322,10 +315,10 @@ function createChooseButton(color, div, hand, number) { //make sure color is a c
     chooseColor.style.cssText = `
         height: 100px;
         width: 100px;
-    `;
+    `
     chooseColor.onclick = function() {
         const card = color.slice(0, 1) + number //for playing the card by making it the correct color
-        console.log("you chose the color", color, "as the hand:", hand)
+        console.log("You chose the color", color + "!")
         hand.hand.push("filler card because playCard() requires food")
         playCard(card, hand, document.querySelector("body")) //i couldnt bother writing more paramteres for the body
         remove("#chooserDiv")
@@ -340,13 +333,16 @@ function switchTurn() {
 }
 
 function load(menu) { //loads a premade menu
+    if ((gameSettings.startCardAmount || gameSettings.startPlayerAmount || gameSettings.startLuck) == null) { //makes sure the browser saves settings
+        window.location.href = "/" //redirects to index.php where it saves settings
+    }
     //creating important elements to remove / replace
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
     const newBody = document.createElement("body")
-
+    
+    
     if (menu === "mainMenu") { //if you want to load the main page
-        console.log("test", gameSettings)
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
         createButton("Start Game", "game", newBody, "starting game...")
@@ -359,7 +355,6 @@ function load(menu) { //loads a premade menu
             window.location.href = "/UNO/settings.php"
         }
         newBody.appendChild(btn)
-
     }
 
     if (menu === "settings") { //if you want to load the settings
@@ -377,11 +372,8 @@ function load(menu) { //loads a premade menu
         }
         middleCard = createHand(true) //parameter makes it only draw 1 random card
         console.log("Starting card will be: ", middleCard.hand[0])
-
         createMiddle(newBody, middleCard.hand)
-
         createHotbar(myHand, newBody)
-
         createSideMiddle(myHand, newBody) //to collect cards when you cant play a card
 
         // //     need to create hands for bots
