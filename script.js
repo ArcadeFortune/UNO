@@ -54,7 +54,7 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
         if (consoleLog !== undefined) {
             console.log(consoleLog)
         }
-        window.location.href = "/UNO/" + whatToLoad
+        window.location.href = "../" + whatToLoad + "/"
     }
 
     body.appendChild(button)
@@ -338,7 +338,7 @@ function switchTurn() {
 
 function load(menu) { //loads a premade menu
     if ((gameSettings.startCardAmount || gameSettings.startPlayerAmount || gameSettings.startLuck) == null) { //makes sure the browser saves settings
-        window.location.href = "/" //redirects to index.php where it saves settings
+        window.location.href = "index.php" //redirects to index.php where it saves settings
     }
     //creating important elements to remove / replace
     const html = document.querySelector("html")
@@ -356,7 +356,7 @@ function load(menu) { //loads a premade menu
         const btn = document.createElement("button")
         btn.innerHTML = "secret dev route"
         btn.onclick = function() {
-            window.location.href = "/UNO/settings.php"
+            window.location.href = "settings/settings.php"
         }
         newBody.appendChild(btn)
     }
