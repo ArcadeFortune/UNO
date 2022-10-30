@@ -1,11 +1,8 @@
-// if (performance.navigation.type == performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
-//     window.localStorage.clear() //will clear localStorage
-//     window.location.href = "/" //will go back to index.php
-// }
 var gameSettings = { //default settings
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
     "startLuck": localStorage.getItem("startLuck"),
+    "fullReload": localStorage.getItem("fullReload"),
 }
 
 var gameCards = [ //40 game cards
@@ -24,15 +21,35 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
     "d⍟", "d+4",
 ]
 
-//var turn
+if (performance.navigation.type == performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
+    if (gameSettings.fullReload == 1) { //only full reloads when the user wants to
+        window.localStorage.clear() //will clear localStorage
+        window.location.href = "/" //will go back to index.php
+    }
+}
 
-var middleCard
+// class Bot {
+//     constructor() {        
+//         localStorage.setItem("totalPlayerCount", parseInt(localStorage.getItem("totalPlayerCount")) + 1)
+//         this.name = "Player " + localStorage.getItem("totalPlayerCount")
+//     }
+
+//     //method
+//     print() {
+//         return `I am ${this.name}`
+//     }
+// }
+
 function remove(querySelector) { //usefull to remove html elements
     document.querySelector(querySelector).remove()
 }
 
 function firstCapital(string) { //usefull to capitalize the first letter in a string
     return string[0].toUpperCase() + string.substring(1)
+}
+
+function switchTurn() {
+    turn += 1
 }
 
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
@@ -332,13 +349,37 @@ function createChooseButton(color, div, hand, number) { //make sure color is a c
     div.appendChild(chooseColor)
 }
 
-function switchTurn() {
-    turn += 1
-}
+// function createBots() { //creates all the bots neccessary
+//     var bots = []
+
+//     for (var i = 1; i <= gameSettings.startPlayerAmount - 1; ++i) { //creates a new Bot() depending on the setting
+//         bots[i] = new Bot()
+//     }
+//     return bots
+// }
+
+// function createBotsMiddle(body, player) { //creates a list displaying all the bots
+//     const ul = document.createElement("ul")
+//     const div = document.createElement("div")
+//     div.style.cssText = `
+//         position: absolute;
+//         left: 80%;
+//         top: 50%;
+//         transform: translate(-50%, -50%);
+//     `
+//     for (x in player) { //makes list bigger when there are more players (bots)
+//         const li = document.createElement("li")  
+//         li.innerHTML = player[x].name
+//         ul.appendChild(li)
+//     }
+
+//     div.appendChild(ul)
+//     body.appendChild(div)
+// }
 
 function load(menu) { //loads a premade menu
     if ((gameSettings.startCardAmount || gameSettings.startPlayerAmount || gameSettings.startLuck) == null) { //makes sure the browser saves settings
-        window.location.href = "index.php" //redirects to index.php where it saves settings
+        window.location.href = "index.html" //redirects to index.html to reload settings
     }
     //creating important elements to remove / replace
     const html = document.querySelector("html")
@@ -366,6 +407,7 @@ function load(menu) { //loads a premade menu
         createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
         createSettings("Total player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
         createSettings("Luck: ", "startLuck", 0, 11, gameSettings.startLuck, newBody)
+        createSettings("Full Reload: ", "fullReload", 0, 2, gameSettings.fullReload, newBody)
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
@@ -379,8 +421,12 @@ function load(menu) { //loads a premade menu
         createMiddle(newBody, middleCard.hand)
         createHotbar(myHand, newBody)
         createSideMiddle(myHand, newBody) //to collect cards when you cant play a card
-
+        
+        
         // //     need to create hands for bots
+        // edit: creating bots oh yeahh
+        // var bots = createBots()
+        // createBotsMiddle(newBody, bots)
 
         // let nr = 8
         // console.log("testing creating variables")
