@@ -221,6 +221,7 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
             playableHand.hand.push(myCard.hand[0])
             remove("#hotbar")
             createHotbar(playableHand, realBody)
+            botsTurn(true)
         }
     }    
     button.style.height = "50px"
@@ -264,14 +265,18 @@ function playCard(card, myHand, body, forced) { //card here is also an array
     }
 
     //now its the bots turn
+    botsTurn(valid)
+}
+
+function botsTurn(valid) {
     if (valid) { //prepare for spaghetti
-        if (!won) {//as soon as someone wins, everything stops
+        if (!won) { //as soon as someone wins, everything stops
             for (b in bots) { //every bot plays 1 card
                 if (!won) { //as soon as someone wins, everything stops more
                     var cantFind = false //once a card has been found, no longer searches for another card
                     for (c in bots[b].hand.hand) { //if a card has been found
                         if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
-                            botPlaysCard(bots[b], c)//it will play it
+                            botPlaysCard(bots[b], c)
                             cantFind = true //and then it should stop finding other cards
                         }
                     }
@@ -280,17 +285,13 @@ function playCard(card, myHand, body, forced) { //card here is also an array
                     }
                     var cantFind = true //reset variable for next bot
                 }
-            if (!won) { //so it looks cleaner in the console.log
-                createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-                remove(".botsMiddle") //refresh bots list
-            }
-            
-            
-            
+                if (!won) { //so it looks cleaner in the console.log
+                    createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
+                    remove(".botsMiddle") //refresh bots list
+                }
             }
             console.log(`Here are the current bots: `, bots, "\n------------------------")
         }
-        
     }
 }
 
@@ -448,8 +449,9 @@ function load(menu, parameter) { //loads a premade menu
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
     const newBody = document.createElement("body")
-    
-    
+    document.body.style.zoom=4.0
+
+
     if (menu === "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
