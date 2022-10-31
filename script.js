@@ -22,26 +22,32 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
 ]
 
 if (performance.navigation.type == performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
-    if (gameSettings.fullReload == 1) { //only full reloads when the user wants to
-        window.localStorage.clear() //will clear localStorage
+    if (gameSettings.fullReload == 1) { //only full reloads when the user wants to.
         window.location.href = "/" //will go back to index.php
     }
 }
 
-// class Bot {
-//     constructor() {        
-//         localStorage.setItem("totalPlayerCount", parseInt(localStorage.getItem("totalPlayerCount")) + 1)
-//         this.name = "Player " + localStorage.getItem("totalPlayerCount")
-//     }
+class Bot {
+    constructor() {        
+        localStorage.setItem("totalPlayerCount", parseInt(localStorage.getItem("totalPlayerCount")) + 1)
+        this.name = "Player " + localStorage.getItem("totalPlayerCount")
+        this.hand = createHand()
+    }
 
-//     //method
-//     print() {
-//         return `I am ${this.name}`
-//     }
-// }
+    //method
+    print() {
+        return `I am ${this.name}`
+    }
+}
+
+var bots = createBots() //lets create our bots
 
 function remove(querySelector) { //usefull to remove html elements
     document.querySelector(querySelector).remove()
+}
+
+function body() {
+    return document.querySelector("body")
 }
 
 function firstCapital(string) { //usefull to capitalize the first letter in a string
@@ -60,7 +66,6 @@ function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underl
         title.style.marginTop = "-20px"
         title.style.textDecoration = "none" //I could shorten the code, but it would be less readable i think
     }
-
     body.appendChild(title)
 }
 
@@ -205,16 +210,12 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
     const button = document.createElement("button")
     if (typeof playableHand === 'object' && givesCard === undefined) {
         button.onclick = function () {
-            if (isPlayable(card)) {
-                playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
-            } else {                
-                console.log("Not allowed to play, try picking another card!")
-            }
+            playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
         }
     } else if (givesCard !== undefined) {
         button.onclick = function () {
             let myCard = createHand(true, true) 
-            console.log("You picked the card", myCard.hand[0] + "!")
+            console.log("↑ You picked the card", myCard.hand[0] + "!")
             playableHand.hand.push(myCard.hand[0])
             remove("#hotbar")
             createHotbar(playableHand, realBody)
@@ -241,19 +242,59 @@ function isPlayable(card) { //checks if the card has the same color or number or
     }
 }
 
-function playCard(card, myHand, body) { //card here is also an array
-    console.log("Playing card", card)
-    myHand.hand.splice(myHand.hand.indexOf(card), 1)
-    remove("#hotbar")
-    if (card.slice(0, 1) === "d") {
-        chooseColor(body, myHand, card.slice(1, 696969))
+function playCard(card, myHand, body, forced) { //card here is also an array
+    if (isPlayable(card) == true || forced == true) {//choose a color needs to override current middle     
+        var valid = true //if its still true then bots will play next
+        console.log("↓ You played the card", card)
+        if (card.slice(0, 1) === "d") {
+            valid = false //bots will not play, when color has been chosen, then this will obv be skipped, so bots will play after color has been chosen
+            chooseColor(body, myHand, card.slice(1, 696969))
+        }
+        myHand.hand.splice(myHand.hand.indexOf(card), 1)
+        remove("#hotbar")
+        createHotbar(myHand, body)
+        createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
+        
+        checkIfWon(myHand)
     }
-    createHotbar(myHand, body)
-    createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
     
-    checkIfWon(myHand)
-    // switchTurn() //needs to be implemented with bots
-    // console.log("current turn: ", turn)
+    else {
+        console.log("Not allowed to play, try picking another card!")
+        valid = false
+    }
+
+    //now its the bots turn
+    if (valid) {
+        console.log("----------its the bots turn to play")
+        for (b in bots) {
+            var cantFind = false //once a card has been found, no longer searches for another card
+            console.log(`\n${bots[b].name} has its turn now`)
+            for (c in bots[b].hand.hand) { //if a card has been found
+                if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
+                    botPlaysCard(bots[b].hand.hand, c)
+                    cantFind = true
+                }
+            }
+            if (!cantFind) { //if it cant find a card
+                botPicksCard(bots[b].hand.hand)
+            }
+            var cantFind = true //reset variable for next bot
+        }
+        createBotsMiddle(document.querySelector("body"), bots) //refresh bots list        
+        remove(".botsMiddle")
+    }
+}
+
+function botPlaysCard(botHand, whichCardIndex) {
+    createMiddle(document.querySelector("body"), [botHand[whichCardIndex]]) //places bots card
+    console.log(`↓ plays ${botHand[whichCardIndex]}`)
+    botHand.splice(whichCardIndex, 1) //removing card from bots hand
+}
+
+function botPicksCard(botHand) {    
+    let card = createHand(true, true) //creates a quick card
+    console.log(`↑ picks ${card.hand[0]}`)
+    botHand.push(card.hand[0]) //adds card to the bots hand
 }
 
 function createHotbar(myHand, body) {
@@ -273,8 +314,8 @@ function createHotbar(myHand, body) {
 
 function checkIfWon(hand) {
     if (hand.hand.length === 0) {
-        console.log("You WON!!")
-        load("victory")
+        load("victory")        
+        throw new Error("You Won!!");
     }
 }
 
@@ -312,7 +353,7 @@ function chooseColor(body, hand, number) {
     const chooserDiv = document.createElement("div")
     chooserDiv.id = "chooserDiv"
     chooserDiv.style.cssText = `
-        background-color: red;
+        background-color: blue;
         position: absolute;
         left: 50%;
         top: 50%;
@@ -326,7 +367,7 @@ function chooseColor(body, hand, number) {
     createChooseButton("blue", chooserDiv, hand, number)
     createChooseButton("green", chooserDiv, hand, number)
     createChooseButton("yellow", chooserDiv, hand, number)
-
+    console.log(body)
     body.appendChild(chooserDiv)
 }
 
@@ -341,7 +382,7 @@ function createChooseButton(color, div, hand, number) { //make sure color is a c
         const card = color.slice(0, 1) + number //for playing the card by making it the correct color
         console.log("You chose the color", color + "!")
         hand.hand.push("filler card because playCard() requires food")
-        playCard(card, hand, document.querySelector("body")) //i couldnt bother writing more paramteres for the body
+        playCard(card, hand, document.querySelector("body"), true) //i couldnt bother writing more paramteres for the body
         remove("#chooserDiv")
     }
     colorIt(color, chooseColor) //color it
@@ -349,33 +390,36 @@ function createChooseButton(color, div, hand, number) { //make sure color is a c
     div.appendChild(chooseColor)
 }
 
-// function createBots() { //creates all the bots neccessary
-//     var bots = []
+function createBots() { //creates all the bots neccessary
+    var bots = []
 
-//     for (var i = 1; i <= gameSettings.startPlayerAmount - 1; ++i) { //creates a new Bot() depending on the setting
-//         bots[i] = new Bot()
-//     }
-//     return bots
-// }
+    for (var i = 1; i <= gameSettings.startPlayerAmount - 1; ++i) { //creates a new Bot() depending on the setting
+        bots[i] = new Bot()
+    }
+    return bots
+}
 
-// function createBotsMiddle(body, player) { //creates a list displaying all the bots
-//     const ul = document.createElement("ul")
-//     const div = document.createElement("div")
-//     div.style.cssText = `
-//         position: absolute;
-//         left: 80%;
-//         top: 50%;
-//         transform: translate(-50%, -50%);
-//     `
-//     for (x in player) { //makes list bigger when there are more players (bots)
-//         const li = document.createElement("li")  
-//         li.innerHTML = player[x].name
-//         ul.appendChild(li)
-//     }
+function createBotsMiddle(body, player) { //creates a list displaying all the bots
+    const ul = document.createElement("ul")
+    const div = document.createElement("div")
+    div.style.cssText = `
+        position: absolute;
+        left: 70%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    `
+    div.className = "botsMiddle"
+    for (x in player) { //makes list bigger when there are more players (bots)
+        console.log(`\n${player[x].name}'s cards:`)
+        console.log(player[x].hand.hand)
+        const li = document.createElement("li")  
+        li.innerHTML = `${player[x].name} [✦] x${player[x].hand.hand.length}`
+        ul.appendChild(li)
+    }
 
-//     div.appendChild(ul)
-//     body.appendChild(div)
-// }
+    div.appendChild(ul)
+    body.appendChild(div)
+}
 
 function load(menu) { //loads a premade menu
     if ((gameSettings.startCardAmount || gameSettings.startPlayerAmount || gameSettings.startLuck) == null) { //makes sure the browser saves settings
@@ -412,6 +456,7 @@ function load(menu) { //loads a premade menu
     }
 
     if (menu === "game") { //if you want the game to start
+        localStorage.setItem("totalPlayerCount", 1) //make sure every game starts with the same totalPlayerCount
         let myHand = createHand() //creating
         console.log("This is you hand: ", myHand.hand)
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
@@ -421,22 +466,17 @@ function load(menu) { //loads a premade menu
         createMiddle(newBody, middleCard.hand)
         createHotbar(myHand, newBody)
         createSideMiddle(myHand, newBody) //to collect cards when you cant play a card
+        createBotsMiddle(newBody, bots)
         
-        
-        // //     need to create hands for bots
-        // edit: creating bots oh yeahh
-        // var bots = createBots()
-        // createBotsMiddle(newBody, bots)
-
-        // let nr = 8
-        // console.log("testing creating variables")
-        // nr = "test"
-        // let p2 = createHand()
-        // console.log("here mainPlayer: ", myHand)
-        // console.log("here p2: ", p2)
-        // console.log("old turn: ", turn)
-        // switchTurn()       
-
+        // const btn = document.createElement("button")
+        // btn.innerHTML = "win"
+        // btn.onclick = function() {            
+        //     myHand.hand.splice(0, 1)
+        //     remove("#hotbar")
+        //     createHotbar(myHand, newBody)
+        //     createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
+        // }
+        // newBody.appendChild(btn)
     }
 
     if (menu === "victory") { //if you want the vicotry screen
@@ -453,3 +493,7 @@ function load(menu) { //loads a premade menu
     //replacing whatever happened above with the previous body
     oldBody.replaceWith(newBody)
 }
+
+
+//found bugs:
+//reloading in settings messes up bots count
