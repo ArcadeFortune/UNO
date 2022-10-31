@@ -1,5 +1,5 @@
 localStorage.setItem("totalPlayerCount", 1) //there is currently 1 player here
-
+var won = false
 var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
@@ -267,28 +267,35 @@ function playCard(card, myHand, body, forced) { //card here is also an array
 
     //now its the bots turn
     if (valid) {
-        console.log("----------its the bots turn to play")
-        for (b in bots) {
-            var cantFind = false //once a card has been found, no longer searches for another card
-            console.log(`\n${bots[b].name} has its turn now`)
-            for (c in bots[b].hand.hand) { //if a card has been found
-                if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
-                    botPlaysCard(bots[b].hand.hand, c)
-                    cantFind = true
+        if (!won) {
+            console.log("----------its the bots turn to play")
+            for (b in bots) {
+                var cantFind = false //once a card has been found, no longer searches for another card
+                console.log(`\n${bots[b].name} has its turn now`)
+                for (c in bots[b].hand.hand) { //if a card has been found
+                    if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
+                        botPlaysCard(bots[b].hand.hand, c)
+                        cantFind = true
+                    }
                 }
+                if (!cantFind) { //if it cant find a card
+                    botPicksCard(bots[b].hand.hand)
+                }
+                var cantFind = true //reset variable for next bot
             }
-            if (!cantFind) { //if it cant find a card
-                botPicksCard(bots[b].hand.hand)
-            }
-            var cantFind = true //reset variable for next bot
+            createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
+            remove(".botsMiddle")
         }
-        createBotsMiddle(document.querySelector("body"), bots) //refresh bots list        
-        remove(".botsMiddle")
     }
 }
 
 function botPlaysCard(botHand, whichCardIndex) {
-    createMiddle(document.querySelector("body"), [botHand[whichCardIndex]]) //places bots card
+    const randomColor = createHand(true, false).hand[0].slice(0, 1) //the color to pick when choosing
+    if (botHand[whichCardIndex].slice(0, 1) === "d") {
+        createMiddle(document.querySelector("body"), [randomColor + botHand[whichCardIndex].slice(1, 696969)]) //places bots card
+    } else {
+        createMiddle(document.querySelector("body"), [botHand[whichCardIndex]]) //places bots card
+    }
     console.log(`↓ plays ${botHand[whichCardIndex]}`)
     botHand.splice(whichCardIndex, 1) //removing card from bots hand
 }
@@ -316,8 +323,9 @@ function createHotbar(myHand, body) {
 
 function checkIfWon(hand) {
     if (hand.hand.length === 0) {
-        load("victory")        
-        throw new Error("You Won!!");
+        load("victory")
+        console.log("YOU WON!!")
+        won = true
     }
 }
 
@@ -369,7 +377,6 @@ function chooseColor(body, hand, number) {
     createChooseButton("blue", chooserDiv, hand, number)
     createChooseButton("green", chooserDiv, hand, number)
     createChooseButton("yellow", chooserDiv, hand, number)
-    console.log(body)
     body.appendChild(chooserDiv)
 }
 
@@ -471,15 +478,15 @@ function load(menu) { //loads a premade menu
         createSideMiddle(myHand, newBody) //to collect cards when you cant play a card
         createBotsMiddle(newBody, bots)
         
-        // const btn = document.createElement("button")
-        // btn.innerHTML = "win"
-        // btn.onclick = function() {            
-        //     myHand.hand.splice(0, 1)
-        //     remove("#hotbar")
-        //     createHotbar(myHand, newBody)
-        //     createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
-        // }
-        // newBody.appendChild(btn)
+        const btn = document.createElement("button")
+        btn.innerHTML = "win"
+        btn.onclick = function() {            
+            myHand.hand.splice(0, 1)
+            remove("#hotbar")
+            createHotbar(myHand, newBody)
+            createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
+        }
+        newBody.appendChild(btn)
     }
 
     if (menu === "victory") { //if you want the vicotry screen
