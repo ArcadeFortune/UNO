@@ -1,4 +1,6 @@
-var gameSettings = { //default settings
+localStorage.setItem("totalPlayerCount", 1) //there is currently 1 player here
+
+var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
     "startLuck": localStorage.getItem("startLuck"),
@@ -422,9 +424,6 @@ function createBotsMiddle(body, player) { //creates a list displaying all the bo
 }
 
 function load(menu) { //loads a premade menu
-    if ((gameSettings.startCardAmount || gameSettings.startPlayerAmount || gameSettings.startLuck) == null) { //makes sure the browser saves settings
-        window.location.href = "index.html" //redirects to index.html to reload settings
-    }
     //creating important elements to remove / replace
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
@@ -455,7 +454,11 @@ function load(menu) { //loads a premade menu
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
 
-    if (menu === "game") { //if you want the game to start
+    if (menu === "game") { //if you want the game to start      
+        if (gameSettings.startCardAmount  == null) { //makes sure the browser saves settings
+            console.log("no settings found")
+            window.location.href = "../" //redirects to index.html to reload settings
+        }
         localStorage.setItem("totalPlayerCount", 1) //make sure every game starts with the same totalPlayerCount
         let myHand = createHand() //creating
         console.log("This is you hand: ", myHand.hand)
@@ -497,3 +500,4 @@ function load(menu) { //loads a premade menu
 
 //found bugs:
 //reloading in settings messes up bots count
+//bots cant play dark cards
