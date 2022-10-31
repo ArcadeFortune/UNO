@@ -256,8 +256,6 @@ function playCard(card, myHand, body, forced) { //card here is also an array
         remove("#hotbar")
         createHotbar(myHand, body)
         createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
-        
-        checkIfWon(myHand)
     }
     
     else {
@@ -333,6 +331,7 @@ function createHotbar(myHand, body) {
     `
     myHand.hand.map((card) => createCard(card, p, myHand, body))
     body.appendChild(p)
+    checkIfWon(myHand)
 
     return p
 }
