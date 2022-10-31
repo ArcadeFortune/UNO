@@ -266,44 +266,60 @@ function playCard(card, myHand, body, forced) { //card here is also an array
     }
 
     //now its the bots turn
-    if (valid) {
-        if (!won) {
-            console.log("----------its the bots turn to play")
-            for (b in bots) {
-                var cantFind = false //once a card has been found, no longer searches for another card
-                console.log(`\n${bots[b].name} has its turn now`)
-                for (c in bots[b].hand.hand) { //if a card has been found
-                    if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
-                        botPlaysCard(bots[b].hand.hand, c)
-                        cantFind = true
+    if (valid) { //prepare for spaghetti
+        if (!won) {//as soon as someone wins, everything stops
+            for (b in bots) { //every bot plays 1 card
+                if (!won) { //as soon as someone wins, everything stops more
+                    var cantFind = false //once a card has been found, no longer searches for another card
+                    for (c in bots[b].hand.hand) { //if a card has been found
+                        if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
+                            botPlaysCard(bots[b], c)//it will play it
+                            cantFind = true //and then it should stop finding other cards
+                        }
                     }
+                    if (!cantFind) { //if it cant find a card
+                        botPicksCard(bots[b]) //it will pick a card
+                    }
+                    var cantFind = true //reset variable for next bot
                 }
-                if (!cantFind) { //if it cant find a card
-                    botPicksCard(bots[b].hand.hand)
-                }
-                var cantFind = true //reset variable for next bot
+            if (!won) { //so it looks cleaner in the console.log
+                createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
+                remove(".botsMiddle") //refresh bots list
             }
-            createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-            remove(".botsMiddle")
+            
+            
+            
+            }
+            console.log(`Here are the current bots: `, bots, "\n------------------------")
         }
+        
     }
 }
 
-function botPlaysCard(botHand, whichCardIndex) {
+function botPlaysCard(bot, whichCardIndex) {
     const randomColor = createHand(true, false).hand[0].slice(0, 1) //the color to pick when choosing
-    if (botHand[whichCardIndex].slice(0, 1) === "d") {
-        createMiddle(document.querySelector("body"), [randomColor + botHand[whichCardIndex].slice(1, 696969)]) //places bots card
+    if (bot.hand.hand[whichCardIndex].slice(0, 1) === "d") { //if bot happens to play a dark card
+        createMiddle(document.querySelector("body"), [randomColor + bot.hand.hand[whichCardIndex].slice(1, 696969)]) //places bots card
     } else {
-        createMiddle(document.querySelector("body"), [botHand[whichCardIndex]]) //places bots card
+        createMiddle(document.querySelector("body"), [bot.hand.hand[whichCardIndex]]) //places bots card
     }
-    console.log(`↓ plays ${botHand[whichCardIndex]}`)
-    botHand.splice(whichCardIndex, 1) //removing card from bots hand
+    console.log(`↓ ${bot.name} plays ${bot.hand.hand[whichCardIndex]}`)
+    bot.hand.hand.splice(whichCardIndex, 1) //remove card from bots hand
+    checkIfBotWins(bot)
 }
 
-function botPicksCard(botHand) {    
+function botPicksCard(bot) {    
     let card = createHand(true, true) //creates a quick card
-    console.log(`↑ picks ${card.hand[0]}`)
-    botHand.push(card.hand[0]) //adds card to the bots hand
+    console.log(`↑ ${bot.name} picks ${card.hand[0]}`)
+    bot.hand.hand.push(card.hand[0]) //adds card to the bots hand
+}
+
+function checkIfBotWins(bot) {
+    if(bot.hand.hand.length === 0) {
+        console.log(`BOT ${bot.name} WONNNNNNNNNNNNNNNNNNNNN`)
+        won = true
+        load("victory", bot.name)
+    }
 }
 
 function createHotbar(myHand, body) {
@@ -419,8 +435,6 @@ function createBotsMiddle(body, player) { //creates a list displaying all the bo
     `
     div.className = "botsMiddle"
     for (x in player) { //makes list bigger when there are more players (bots)
-        console.log(`\n${player[x].name}'s cards:`)
-        console.log(player[x].hand.hand)
         const li = document.createElement("li")  
         li.innerHTML = `${player[x].name} [✦] x${player[x].hand.hand.length}`
         ul.appendChild(li)
@@ -430,7 +444,7 @@ function createBotsMiddle(body, player) { //creates a list displaying all the bo
     body.appendChild(div)
 }
 
-function load(menu) { //loads a premade menu
+function load(menu, parameter) { //loads a premade menu
     //creating important elements to remove / replace
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
@@ -490,8 +504,13 @@ function load(menu) { //loads a premade menu
     }
 
     if (menu === "victory") { //if you want the vicotry screen
-        createTitle("You won!!!", "h1", newBody)
-        createButton("YAY!", "mainMenu", newBody, "returning to main menu...")
+        if (!parameter) {
+            createTitle("You won!!!", "h1", newBody)
+            createButton("YAY!", "mainMenu", newBody, "returning to main menu...")
+        } else{
+            createTitle(`${parameter} won!!!`, "h1", newBody)
+            createButton("next time!", "mainMenu", newBody, "returning to main menu...")
+        }
     }
 
     if (menu === "login") {
