@@ -1,4 +1,3 @@
-
 var gameSettings = { //default settings
     "startCardAmount": 7,
     "startPlayerAmount": 4,
@@ -345,18 +344,18 @@ function load(menu) { //loads a premade menu
     const oldBody = document.querySelector("body")
     const newBody = document.createElement("body")
 
-    if (menu === "mainMenu") { //if you want to load the main page
-        console.log("test", gameSettings)
+    if (menu === "mainMenu") { //if you want to load the main page        
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
         createButton("Start Game", "game", newBody, "starting game...")
         createButton("Change settings", "settings", newBody, "opening settings...")    
         createButton("Login", "login", newBody, "Logging in") 
+        createButton("TEST", "test.html", newBody, "Logging in") 
         
         const btn = document.createElement("button")
         btn.innerHTML = "secret dev route"
         btn.onclick = function() {
-            window.location.href = "/UNO/settings.php"
+            window.location.href = "/UNO/test.html"
         }
         newBody.appendChild(btn)
 
@@ -408,6 +407,62 @@ function load(menu) { //loads a premade menu
         createButton("return", "mainMenu", newBody, "returning home")
     }
 
+    if (menu === "test") {
+        const btn = document.createElement("button")
+        btn.innerHTML = "secret dev route"
+        btn.onclick = async function() {
+            //   blockInput()
+              await asyncCall()
+              console.log("ADFJKA:LDFKJSDF")
+
+        }
+        newBody.appendChild(btn)
+
+        const btn2 = document.createElement("button")
+        btn2.innerHTML = "what are you"
+        btn2.onclick = function() {
+              console.log("gay")
+        }
+        newBody.appendChild(btn2)
+    }
+
     //replacing whatever happened above with the previous body
     oldBody.replaceWith(newBody)
 }
+
+function blockInput() {
+    console.log("blocking input")
+    const block = document.createElement("div")
+    block.classList.add("blockedInput")
+    block.style.cssText = `
+        background-color: transparent;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        min-height: 20000px;
+        min-width: 20000px;
+        z-index: 69696969;
+    `
+    block.innerHTML = "TESTETS"
+    document.querySelector("body").appendChild(block)
+}
+
+function unBlock() {
+    remove(".blockedInput")
+}
+
+function resolveAfter2Seconds() {
+    return new Promise(resolve => {
+        setTimeout(() => {  
+            resolve('resolved')
+        }, 600);
+    });
+  }
+  
+  async function asyncCall() {
+    for (var i = 0; i < 5; i++) {
+        console.log(i)
+        await resolveAfter2Seconds()
+    }
+  }
