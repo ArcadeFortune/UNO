@@ -1,13 +1,15 @@
 localStorage.setItem("totalPlayerCount", 1) //there is currently 1 player here
-var won = false
-var disabled = false
+var won = false //no one has won yet
+var skippedRound = false //no rounds have been skipped by the ㊀ card
+var disabled = false //all the buttons are ENabled
+// var middleCard //this line of code is infact useless, and i do not know why  
 var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
     "startLuck": localStorage.getItem("startLuck"),
     "roundSpeed": localStorage.getItem("roundSpeed"),
     "fullReload": localStorage.getItem("fullReload"),
-} //if adding new settings add them in 3 places: here, index.html and in load("settings")
+} //if adding new settings, add them in 3 places: here, index.html and in load("settings")
 
 var gameCards = [ //40 game cards
     "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9",
@@ -261,6 +263,7 @@ function isPlayable(card) { //checks if the card has the same color or number or
 }
 
 function playCard(card, myHand, body, forced) { //card here is also an array
+    //check if skipped
     if (isPlayable(card) == true || forced == true) {//choose a color needs to override current middle     
         var valid = true //if its still true then bots will play next
         console.log("↓ You played the card", card)
@@ -285,27 +288,33 @@ function playCard(card, myHand, body, forced) { //card here is also an array
 
 async function botsTurn(valid) {
     if (valid) { //prepare for spaghetti
-    disableButtons()
+    disableButtons() //disables other input
         if (!won) { //as soon as someone wins, everything stops
             for (b in bots) { //every bot plays 1 card
                 if (!won) { //as soon as someone wins, everything stops more!!!
                     var cantFind = false //once a card has been found, no longer searches for another card
-                    for (c in bots[b].hand.hand) { //if a card has been found
-                        if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
-                            botPlaysCard(bots[b], c) //the bot plays his found card
-                            cantFind = true //and then it should stop finding other cards
+                        for (c in bots[b].hand.hand) { //if a card has been found
+                            if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
+                                shouldSkip() ? console.log(`㊀ ${bots[b].name} got blocked`) : botPlaysCard(bots[b], c) //the bot plays his found card
+                                cantFind = true //and then it should stop finding other cards
+                            }
                         }
-                    }
-                    if (!cantFind) { //if it cant find a card
-                        botPicksCard(bots[b]) //it will pick a card
-                    }
-                    await wait()
-                    createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-                    remove(".botsMiddle") //refresh bots list
+                        if (!cantFind) { //if it cant find a card
+                            shouldSkip() ? null : botPicksCard(bots[b]) //it will pick a card
+                        }
+                        await wait()
+                        createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
+                        remove(".botsMiddle") //refresh bots list
                 }
             }
             console.log(`Here are the current bots: `, bots, "\n------------------------") //u could delete this line
             enableButtons()
+        }
+    }
+    if (!won) {        
+        if (shouldSkip()) {
+            console.log("㊀ You have been blocked")
+            botsTurn(true)
         }
     }
 }
@@ -333,6 +342,17 @@ function checkIfBotWins(bot) {
         console.log(`BOT ${bot.name} WONNNNNNNNNNNNNNNNNNNNN`)
         won = true //sets global variable 'won' to true
         load("victory", bot.name) //loads victory screen
+    }
+}
+
+function shouldSkip() {
+    if (middleCard.slice(1, 6969) === "㊀" && !skippedRound) {
+        skippedRound = true
+        return true
+    }
+    else {
+        skippedRound = false
+        return false
     }
 }
 
@@ -515,7 +535,8 @@ function load(menu, parameter) { //loads a premade menu
         
         const btn = document.createElement("button")
         btn.innerHTML = "win"
-        btn.onclick = function() {            
+        btn.onclick = function() {
+            console.log(middleCard)
             myHand.hand.splice(0, 1)
             remove("#hotbar")
             createHotbar(myHand, newBody)
