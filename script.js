@@ -1,16 +1,13 @@
-var gameSettings = { //default settings
-    "startCardAmount": 7,
-    "startPlayerAmount": 4,
-    "startLuck": 4,
-}
 localStorage.setItem("totalPlayerCount", 1) //there is currently 1 player here
 var won = false
+var disabled = false
 var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
     "startLuck": localStorage.getItem("startLuck"),
+    "roundSpeed": localStorage.getItem("roundSpeed"),
     "fullReload": localStorage.getItem("fullReload"),
-}
+} //if adding new settings add them in 3 places: here, index.html and in load("settings")
 
 var gameCards = [ //40 game cards
     "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9",
@@ -30,7 +27,7 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
 
 if (performance.navigation.type == performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
     if (gameSettings.fullReload == 1) { //only full reloads when the user wants to.
-        window.location.href = "/" //will go back to index.php
+        window.location.href = "/UNO/index.html" //will go back to index.html
     }
 }
 
@@ -61,8 +58,20 @@ function firstCapital(string) { //usefull to capitalize the first letter in a st
     return string[0].toUpperCase() + string.substring(1)
 }
 
-function switchTurn() {
-    turn += 1
+function disableButtons() {
+    const inputs = document.querySelectorAll("button")
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].disabled = true
+        disabled = true
+    }
+}
+
+function enableButtons() {
+    const inputs = document.querySelectorAll("button")
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].disabled = false
+        disabled = false
+    }
 }
 
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
@@ -215,6 +224,7 @@ function createMiddle(body, card) { //card here is an array
 function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS the given card
     //card is a string remeber!!
     const button = document.createElement("button")
+    disabled ? button.disabled = true : null
     if (typeof playableHand === 'object' && givesCard === undefined) {
         button.onclick = function () {
             playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
@@ -270,46 +280,46 @@ function playCard(card, myHand, body, forced) { //card here is also an array
     }
 
     //now its the bots turn
-    botsTurn(valid)
+    botsTurn(valid) //valid is here to check if ur picking a color or not
 }
 
-function botsTurn(valid) {
+async function botsTurn(valid) {
     if (valid) { //prepare for spaghetti
+    disableButtons()
         if (!won) { //as soon as someone wins, everything stops
             for (b in bots) { //every bot plays 1 card
-                if (!won) { //as soon as someone wins, everything stops more
+                if (!won) { //as soon as someone wins, everything stops more!!!
                     var cantFind = false //once a card has been found, no longer searches for another card
                     for (c in bots[b].hand.hand) { //if a card has been found
                         if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
-                            botPlaysCard(bots[b], c)
+                            botPlaysCard(bots[b], c) //the bot plays his found card
                             cantFind = true //and then it should stop finding other cards
                         }
                     }
                     if (!cantFind) { //if it cant find a card
                         botPicksCard(bots[b]) //it will pick a card
                     }
-                    var cantFind = true //reset variable for next bot
-                }
-                if (!won) { //so it looks cleaner in the console.log
+                    await wait()
                     createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
                     remove(".botsMiddle") //refresh bots list
                 }
             }
-            console.log(`Here are the current bots: `, bots, "\n------------------------")
+            console.log(`Here are the current bots: `, bots, "\n------------------------") //u could delete this line
+            enableButtons()
         }
     }
 }
 
 function botPlaysCard(bot, whichCardIndex) {
-    const randomColor = createHand(true, false).hand[0].slice(0, 1) //the color to pick when choosing
-    if (bot.hand.hand[whichCardIndex].slice(0, 1) === "d") { //if bot happens to play a dark card
+    const randomColor = createHand(true, false).hand[0].slice(0, 1) //choose a random color to pick when choosing
+    if (bot.hand.hand[whichCardIndex].slice(0, 1) === "d") { //if bot happens to play a chooser card
         createMiddle(document.querySelector("body"), [randomColor + bot.hand.hand[whichCardIndex].slice(1, 696969)]) //places bots card
     } else {
         createMiddle(document.querySelector("body"), [bot.hand.hand[whichCardIndex]]) //places bots card
     }
     console.log(`↓ ${bot.name} plays ${bot.hand.hand[whichCardIndex]}`)
     bot.hand.hand.splice(whichCardIndex, 1) //remove card from bots hand
-    checkIfBotWins(bot)
+    checkIfBotWins(bot) //check if bot wins
 }
 
 function botPicksCard(bot) {    
@@ -319,10 +329,10 @@ function botPicksCard(bot) {
 }
 
 function checkIfBotWins(bot) {
-    if(bot.hand.hand.length === 0) {
+    if(bot.hand.hand.length === 0) { //if bots has no cards left
         console.log(`BOT ${bot.name} WONNNNNNNNNNNNNNNNNNNNN`)
-        won = true
-        load("victory", bot.name)
+        won = true //sets global variable 'won' to true
+        load("victory", bot.name) //loads victory screen
     }
 }
 
@@ -398,7 +408,7 @@ function chooseColor(body, hand, number) {
     createChooseButton("blue", chooserDiv, hand, number)
     createChooseButton("green", chooserDiv, hand, number)
     createChooseButton("yellow", chooserDiv, hand, number)
-    
+
     body.appendChild(chooserDiv)
 }
 
@@ -462,7 +472,6 @@ function load(menu, parameter) { //loads a premade menu
         createButton("Start Game", "game", newBody, "starting game...")
         createButton("Change settings", "settings", newBody, "opening settings...")    
         createButton("Login", "login", newBody, "Logging in") 
-        createButton("TEST", "test.html", newBody, "Logging in") 
         
         const btn = document.createElement("button")
         btn.innerHTML = "secret dev route"
@@ -478,6 +487,7 @@ function load(menu, parameter) { //loads a premade menu
         createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
         createSettings("Total player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
         createSettings("Luck: ", "startLuck", 0, 11, gameSettings.startLuck, newBody)
+        createSettings("Round Speed ", "roundSpeed", 0, 6, gameSettings.roundSpeed, newBody)
         createSettings("Full Reload: ", "fullReload", 0, 2, gameSettings.fullReload, newBody)
         createButton("Return to main menu", "mainMenu", newBody, "returning home...")
     }
@@ -534,9 +544,12 @@ function load(menu, parameter) { //loads a premade menu
         const btn = document.createElement("button")
         btn.innerHTML = "secret dev route"
         btn.onclick = async function() {
-            //   blockInput()
-              await asyncCall()
-              console.log("ADFJKA:LDFKJSDF")
+            blockInput()
+            for (var i = 0; i < 5; i++) {
+                console.log(i)
+                await wait()
+            }
+            enableButtons()
 
         }
         newBody.appendChild(btn)
@@ -555,24 +568,24 @@ function load(menu, parameter) { //loads a premade menu
 
 function blockInput() {
     console.log("blocking input")
-    const block = document.createElement("div")
-    block.classList.add("blockedInput")
-    block.style.cssText = `
-        background-color: transparent;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        min-height: 20000px;
-        min-width: 20000px;
-        z-index: 69696969;
-    `
-    block.innerHTML = "TESTETS"
-    document.querySelector("body").appendChild(block)
-}
-
-function unBlock() {
-    remove(".blockedInput")
+    // const block = document.createElement("div")
+    // block.classList.add("blockedInput")
+    // block.style.cssText = `
+    //     background-color: transparent;
+    //     position: absolute;
+    //     left: 50%;
+    //     top: 50%;
+    //     transform: translate(-50%, -50%);
+    //     min-height: 20000px;
+    //     min-width: 20000px;
+    //     z-index: 69696969;
+    // `
+    // block.innerHTML = "TESTETS"
+    // document.querySelector("body").appendChild(block)
+    const inputs = document.querySelectorAll("button")
+    for (var i = 0; i < inputs.length; i++) {
+            inputs[i].disabled = true;
+    }
 }
 
 function resolveAfter2Seconds() {
@@ -589,6 +602,14 @@ function resolveAfter2Seconds() {
         await resolveAfter2Seconds()
     }
   }
+
+function wait() {
+    return new Promise(resolve => {
+        setTimeout(() => {  
+            resolve('resolved')
+        }, gameSettings.roundSpeed * 100);
+    })
+}
 //found bugs:
 //reloading in settings messes up bots count
 //bots cant play dark cards
