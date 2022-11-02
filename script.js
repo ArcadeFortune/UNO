@@ -76,6 +76,14 @@ function enableButtons() {
     }
 }
 
+function wait() {
+    return new Promise(resolve => {
+        setTimeout(() => {  
+            resolve('resolved')
+        }, gameSettings.roundSpeed * 100);
+    })
+}
+
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
     const title = document.createElement(hx)
     title.innerHTML = innerHTML
@@ -179,23 +187,22 @@ function createRemeberButton(body) {
     body.appendChild(label)
 }
 
-function createHand(isMiddle, allowSpecial) { //creates X cards according to the set settings
-    let myHand = {}
-    myHand.hand = []
-    if (isMiddle === true) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
-        isMiddle = gameSettings.startCardAmount
+function createHand(amount, allowSpecial) { //creates X cards according to the set settings
+    let myHand = []
+    if (amount === true) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
+        amount = gameSettings.startCardAmount
     } else {
-        isMiddle = 1
+        amount = 1
     }
-    for (let i = 0 + (isMiddle - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
+    for (let i = 0 + (amount - 1); i < gameSettings.startCardAmount; i++) { //draws you the cards
         if (allowSpecial === true) {
-            isMiddle = 1 //so the cardgiver gives one card and allows special
+            amount = 1 //so the cardgiver gives one card and allows special
         }
-        if ((Math.random() * 10) < gameSettings.startLuck && isMiddle == 1) { //Math.random() decides if you get a special cards depending on how high your luck is
-            myHand.hand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
+        if ((Math.random() * 10) < gameSettings.startLuck && amount == 1) { //Math.random() decides if you get a special cards depending on how high your luck is
+            myHand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
         }
         else {
-            myHand.hand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
+            myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
         }
     }
     return myHand
@@ -234,8 +241,8 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
     } else if (givesCard !== undefined) {
         button.onclick = function () {
             let myCard = createHand(true, true) 
-            console.log("↑ You picked the card", myCard.hand[0] + "!")
-            playableHand.hand.push(myCard.hand[0])
+            console.log("↑ You picked the card", myCard[0] + "!")
+            playableHand.push(myCard[0])
             remove("#hotbar")
             createHotbar(playableHand, realBody)
             botsTurn(true)
@@ -271,7 +278,7 @@ function playCard(card, myHand, body, forced) { //card here is also an array
             valid = false //bots will not play, when color has been chosen, then this will obv be skipped, so bots will play after color has been chosen
             chooseColor(body, myHand, card.slice(1, 696969))
         }
-        myHand.hand.splice(myHand.hand.indexOf(card), 1)
+        myHand.splice(myHand.indexOf(card), 1)
         remove("#hotbar")
         createHotbar(myHand, body)
         createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
@@ -293,8 +300,8 @@ async function botsTurn(valid) {
             for (b in bots) { //every bot plays 1 card
                 if (!won) { //as soon as someone wins, everything stops more!!!
                     var cantFind = false //once a card has been found, no longer searches for another card
-                        for (c in bots[b].hand.hand) { //if a card has been found
-                            if (isPlayable(bots[b].hand.hand[c]) && !cantFind) {
+                        for (c in bots[b].hand) { //if a card has been found
+                            if (isPlayable(bots[b].hand[c]) && !cantFind) {
                                 shouldSkip() ? console.log(`㊀ ${bots[b].name} got blocked`) : botPlaysCard(bots[b], c) //the bot plays his found card
                                 cantFind = true //and then it should stop finding other cards
                             }
@@ -311,7 +318,7 @@ async function botsTurn(valid) {
             enableButtons()
         }
     }
-    if (!won) {        
+    if (!won) {
         if (shouldSkip()) {
             console.log("㊀ You have been blocked")
             botsTurn(true)
@@ -320,25 +327,25 @@ async function botsTurn(valid) {
 }
 
 function botPlaysCard(bot, whichCardIndex) {
-    const randomColor = createHand(true, false).hand[0].slice(0, 1) //choose a random color to pick when choosing
-    if (bot.hand.hand[whichCardIndex].slice(0, 1) === "d") { //if bot happens to play a chooser card
-        createMiddle(document.querySelector("body"), [randomColor + bot.hand.hand[whichCardIndex].slice(1, 696969)]) //places bots card
+    const randomColor = createHand(true, false)[0].slice(0, 1) //choose a random color to pick when choosing
+    if (bot.hand[whichCardIndex].slice(0, 1) === "d") { //if bot happens to play a chooser card
+        createMiddle(document.querySelector("body"), [randomColor + bot.hand[whichCardIndex].slice(1, 696969)]) //places bots card
     } else {
-        createMiddle(document.querySelector("body"), [bot.hand.hand[whichCardIndex]]) //places bots card
+        createMiddle(document.querySelector("body"), [bot.hand[whichCardIndex]]) //places bots card
     }
-    console.log(`↓ ${bot.name} plays ${bot.hand.hand[whichCardIndex]}`)
-    bot.hand.hand.splice(whichCardIndex, 1) //remove card from bots hand
+    console.log(`↓ ${bot.name} plays ${bot.hand[whichCardIndex]}`)
+    bot.hand.splice(whichCardIndex, 1) //remove card from bots hand
     checkIfBotWins(bot) //check if bot wins
 }
 
 function botPicksCard(bot) {    
     let card = createHand(true, true) //creates a quick card
-    console.log(`↑ ${bot.name} picks ${card.hand[0]}`)
-    bot.hand.hand.push(card.hand[0]) //adds card to the bots hand
+    console.log(`↑ ${bot.name} picks ${card[0]}`)
+    bot.hand.push(card[0]) //adds card to the bots hand
 }
 
 function checkIfBotWins(bot) {
-    if(bot.hand.hand.length === 0) { //if bots has no cards left
+    if(bot.hand.length === 0) { //if bots has no cards left
         console.log(`BOT ${bot.name} WONNNNNNNNNNNNNNNNNNNNN`)
         won = true //sets global variable 'won' to true
         load("victory", bot.name) //loads victory screen
@@ -356,6 +363,13 @@ function shouldSkip() {
     }
 }
 
+function shouldPickUp() {
+    if (middleCard.slice(1, 6969) === "㊀" && !skippedRound) {
+        skippedRound = true
+        return true
+    }
+}
+
 function createHotbar(myHand, body) {
     const p = document.createElement("p")
     p.id = "hotbar"
@@ -365,7 +379,7 @@ function createHotbar(myHand, body) {
         top: 90%;
         transform: translate(-50%, -90%);
     `
-    myHand.hand.map((card) => createCard(card, p, myHand, body))
+    myHand.map((card) => createCard(card, p, myHand, body))
     body.appendChild(p)
     checkIfWon(myHand)
 
@@ -373,7 +387,7 @@ function createHotbar(myHand, body) {
 }
 
 function checkIfWon(hand) {
-    if (hand.hand.length === 0) {
+    if (hand.length === 0) {
         load("victory")
         console.log("YOU WON!!")
         won = true
@@ -442,7 +456,7 @@ function createChooseButton(color, div, hand, number) { //make sure color is a c
     chooseColor.onclick = function() {
         const card = color.slice(0, 1) + number //for playing the card by making it the correct color
         console.log("You chose the color", color + "!")
-        hand.hand.push("filler card because playCard() requires food")
+        hand.push("filler card because playCard() requires food")
         playCard(card, hand, document.querySelector("body"), true) //i couldnt bother writing more paramteres for the body
         remove("#chooserDiv")
     }
@@ -472,7 +486,7 @@ function createBotsMiddle(body, player) { //creates a list displaying all the bo
     div.className = "botsMiddle"
     for (x in player) { //makes list bigger when there are more players (bots)
         const li = document.createElement("li")  
-        li.innerHTML = `${player[x].name} [✦] x${player[x].hand.hand.length}`
+        li.innerHTML = `${player[x].name} [✦] x${player[x].hand.length}`
         ul.appendChild(li)
     }
 
@@ -519,13 +533,13 @@ function load(menu, parameter) { //loads a premade menu
         }
         localStorage.setItem("totalPlayerCount", 1) //make sure every game starts with the same totalPlayerCount
         let myHand = createHand() //creating
-        console.log("This is you hand: ", myHand.hand)
+        console.log("This is you hand: ", myHand)
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
         }
         middleCard = createHand(true) //parameter makes it only draw 1 random card
-        console.log("Starting card will be: ", middleCard.hand[0])
+        console.log("Starting card will be: ", middleCard[0])
 
-        createMiddle(newBody, middleCard.hand)
+        createMiddle(newBody, middleCard)
 
         createHotbar(myHand, newBody)
 
@@ -537,12 +551,22 @@ function load(menu, parameter) { //loads a premade menu
         btn.innerHTML = "win"
         btn.onclick = function() {
             console.log(middleCard)
-            myHand.hand.splice(0, 1)
+            createHand()
+            myHand.splice(0, 1)
             remove("#hotbar")
             createHotbar(myHand, newBody)
             createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
         }
         newBody.appendChild(btn)
+        const plus2 = document.createElement("button")
+        plus2.innerHTML = "win"
+        plus2.onclick = function() {
+            // const card = createHand(2)
+            remove("#hotbar")
+            createHotbar(myHand, newBody)
+            createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
+        }
+        newBody.appendChild(plus2)
     }
 
     if (menu === "victory") { //if you want the vicotry screen
@@ -586,51 +610,7 @@ function load(menu, parameter) { //loads a premade menu
     //replacing whatever happened above with the previous body
     oldBody.replaceWith(newBody)
 }
-
-function blockInput() {
-    console.log("blocking input")
-    // const block = document.createElement("div")
-    // block.classList.add("blockedInput")
-    // block.style.cssText = `
-    //     background-color: transparent;
-    //     position: absolute;
-    //     left: 50%;
-    //     top: 50%;
-    //     transform: translate(-50%, -50%);
-    //     min-height: 20000px;
-    //     min-width: 20000px;
-    //     z-index: 69696969;
-    // `
-    // block.innerHTML = "TESTETS"
-    // document.querySelector("body").appendChild(block)
-    const inputs = document.querySelectorAll("button")
-    for (var i = 0; i < inputs.length; i++) {
-            inputs[i].disabled = true;
-    }
-}
-
-function resolveAfter2Seconds() {
-    return new Promise(resolve => {
-        setTimeout(() => {  
-            resolve('resolved')
-        }, 600);
-    });
-  }
-  
-  async function asyncCall() {
-    for (var i = 0; i < 5; i++) {
-        console.log(i)
-        await resolveAfter2Seconds()
-    }
-  }
-
-function wait() {
-    return new Promise(resolve => {
-        setTimeout(() => {  
-            resolve('resolved')
-        }, gameSettings.roundSpeed * 100);
-    })
-}
 //found bugs:
-//reloading in settings messes up bots count
-//bots cant play dark cards
+//✓ reloading in settings messes up bots count
+//✓ bots cant play dark cards
+//p2 places ㊀ card, p3 gets blocked, p4 picks a card, AND THE PLAYER 1 GETS BLOCKED!!
