@@ -597,7 +597,7 @@ function load(menu, parameter) { //loads a premade menu
         btn.innerHTML = "win"
         btn.onclick = function() {
             createHand()
-            myHand.splice(0, 1)
+            myHand = []
             remove("#hotbar")
             createHotbar(myHand, newBody)
             createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
