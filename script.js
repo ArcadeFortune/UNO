@@ -315,7 +315,7 @@ async function botsTurn(valid) {
                             break
                         }
                         else if (shouldPickUp()) {
-                            console.log(`${middleCard.slice(1,3)} ${bots[b].name} has to pick up ${middleCard.slice(2,3)} cards`)
+                            console.log(`${middleCard.slice(1, 3)} ${bots[b].name} has to pick up ${middleCard.slice(2,3)} cards`)
                             await pickUp(bots[b].hand)
                             skippedRound = true
                             cantFind = true //and then it should stop finding other cards
@@ -327,11 +327,11 @@ async function botsTurn(valid) {
                         }
                     }
                     if (!cantFind) {
-                        botPicksCard(bots[b]) //the bot plays his found card
+                        botPicksCard(bots[b])
                     }
-                    await wait()
                     createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-                    remove(".botsMiddle") //refresh bots list                       
+                    remove(".botsMiddle") //refresh bots list
+                    await wait()                      
                 }
             }
             if (shouldSkip()) {
@@ -340,7 +340,7 @@ async function botsTurn(valid) {
                 botsTurn(true)
             } else if (shouldPickUp()) {
                 console.log(`+${middleCard.slice(2, 3)} You have to pick up ${middleCard.slice(2, 3)} cards`)
-                await pickUp(myHand)
+                await pickUp(myHand, true)
                 botsTurn(true)
             }
             console.log(`Here are the current bots: `, bots, "\n-----------------------------------") //u could delete this line
@@ -394,11 +394,29 @@ function shouldPickUp() {//my spaghetti code requires u to put this function aft
     }
 }
 
-async function pickUp(hand) {
+async function pickUp(hand, graphically) { //make it nicely showable
+    var graphy = middleCard.slice(2, 3)
+    if (graphically) {
+        const fillercard = "a" + middleCard.slice(1, 3)
+        for (var i = 0; i < middleCard.slice(2, 3); i++) {
+            hand.push(fillercard)
+            remove("#hotbar")
+            createHotbar(myHand, document.querySelector("body"))
+        }
+    }
+
     for (var i = 0; i < middleCard.slice(2, 3); i++) {
         const card = createHand(1, true) //returns an array btw
         console.log("↑ Picking up the card", card[0] + "...")
-        hand.push(card[0])
+
+        if (graphically) { //replaces the fillercards slowly
+            hand.splice(-graphy, 1, card[0])
+            console.log("splicing card at", -graphy)
+            graphy -= 1
+        } else {
+            hand.push(card[0])
+        }
+
         createHotbar(myHand, document.querySelector("body"))
         remove("#hotbar")
         createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
@@ -441,7 +459,7 @@ function createSideMiddle(myHand, body) {
         top: 50%;
         transform: translate(-50%, -50%);
     `
-    createCard("✞✦", div , myHand, body, true) //the render removes the first letter btw
+    createCard("a✦", div , myHand, body, true) //the render removes the first letter btw
     
     body.appendChild(div) 
 }
@@ -456,8 +474,12 @@ function colorIt(colorString, what) {
     } else if (colorString.includes("b")) {
         what.style.backgroundColor = "blue"
         what.style.color = "white" //make it readable
+
+    } else if (colorString.includes("a")) { //All the colors
+        what.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)"
+
     } else {
-        what.style.backgroundColor = "darkGrey"
+        what.style.backgroundColor = "darkgrey"
     }
 }
 
@@ -537,7 +559,6 @@ function load(menu, parameter) { //loads a premade menu
     const html = document.querySelector("html")
     const oldBody = document.querySelector("body")
     const newBody = document.createElement("body")
-
     if (menu === "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody)
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
@@ -607,6 +628,15 @@ function load(menu, parameter) { //loads a premade menu
             createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
         }
         newBody.appendChild(plus2)
+
+        const plus3 = document.createElement("button")
+        plus3.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)"
+        plus3.innerHTML = "get + 8"
+        plus3.onclick = function() {
+            createMiddle(newBody, ["r+8"])
+            pickUp(myHand, true)
+        }
+        newBody.appendChild(plus3)
     }
 
     if (menu === "victory") { //if you want the vicotry screen
