@@ -285,6 +285,7 @@ function playCard(card, myHand, body, forced) { //card here is also an array
             chooseColor(body, myHand, card.slice(1, 696969))
         }
         myHand.splice(myHand.indexOf(card), 1)
+        skippedRound = false
         remove("#hotbar")
         createHotbar(myHand, body)
         createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
@@ -306,52 +307,46 @@ async function botsTurn(valid) {
             for (b in bots) { //every bot plays 1 card
                 if (!won) { //as soon as someone wins, everything stops more!!!
                     var cantFind = false //once a card has been found, no longer searches for another card
-                        for (c in bots[b].hand) { //goes through the whole loop
-                            if (isPlayable(bots[b].hand[c]) && !cantFind) { //if a card has been found
-                                if (shouldSkip()) {
-                                    console.log(`㊀ ${bots[b].name} got blocked`)
-                                } else if (shouldPickUp()) {
-                                    console.log(`${middleCard.slice(1,3)} ${bots[b].name} has to pick up ${middleCard.slice(2,3)} cards`)
-                                    await pickUp(bots[b].hand)
-                                }else{
-                                    botPlaysCard(bots[b], c) //the bot plays his found card
-                                }
-                                cantFind = true //and then it should stop finding other cards
-                            }
+                    for (c in bots[b].hand) { //goes through the whole loop
+                        if (shouldSkip()) {
+                            console.log(`㊀ ${bots[b].name} got blocked`)
+                            cantFind = true //and then it should stop finding other cards
+                            skippedRound = true
+                            break
                         }
-                        if (!cantFind) { //if it cant find a card
-                            if (shouldSkip()) {
-                                console.log(`㊀ ${bots[b].name} got blocked`)
-                            } else if (shouldPickUp()) {
-                                console.log(`22㊀ ${bots[b].name} got blocked`)
-                                await pickUp(bots[b].hand)
-                            }
-                            else{
-                                botPlaysCard(bots[b], c) //the bot plays his found card
-                            }
+                        else if (shouldPickUp()) {
+                            console.log(`${middleCard.slice(1,3)} ${bots[b].name} has to pick up ${middleCard.slice(2,3)} cards`)
+                            await pickUp(bots[b].hand)
+                            skippedRound = true
+                            cantFind = true //and then it should stop finding other cards
+                            break
+                        } else if (isPlayable(bots[b].hand[c])) {
+                            botPlaysCard(bots[b], c) //the bot plays his found card
+                            cantFind = true //and then it should stop finding other cards
+                            break
                         }
-                        await wait()
-                        createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-                        remove(".botsMiddle") //refresh bots list
+                    }
+                    if (!cantFind) {
+                        botPicksCard(bots[b]) //the bot plays his found card
+                    }
+                    await wait()
+                    createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
+                    remove(".botsMiddle") //refresh bots list                       
                 }
             }
-            console.log(`Here are the current bots: `, bots, "\n------------------------") //u could delete this line
-            enableButtons()
-        }
-
-
-        if (!won) {//check if you are supposed to be skipped
             if (shouldSkip()) {
                 console.log("㊀ You have been blocked")
+                skippedRound = true
                 botsTurn(true)
-            } else if (shouldPickUp()) { //perhaps we could add all the code inside the shouldPickUp() function
+            } else if (shouldPickUp()) {
                 console.log(`+${middleCard.slice(2, 3)} You have to pick up ${middleCard.slice(2, 3)} cards`)
                 await pickUp(myHand)
                 botsTurn(true)
             }
+            console.log(`Here are the current bots: `, bots, "\n-----------------------------------") //u could delete this line
         }
     }
-    
+    enableButtons()
 }
 
 function botPlaysCard(bot, whichCardIndex) {
@@ -362,6 +357,7 @@ function botPlaysCard(bot, whichCardIndex) {
         createMiddle(document.querySelector("body"), [bot.hand[whichCardIndex]]) //places bots card
     }
     console.log(`↓ ${bot.name} plays ${bot.hand[whichCardIndex]}`)
+    skippedRound = false
     bot.hand.splice(whichCardIndex, 1) //remove card from bots hand
     checkIfBotWins(bot) //check if bot wins
 }
@@ -382,7 +378,6 @@ function checkIfBotWins(bot) {
 
 function shouldSkip() { 
     if (middleCard.slice(1, 6969) === "㊀" && !skippedRound) { //skips this round
-        skippedRound = true
         return true
     }
     else {
@@ -392,12 +387,9 @@ function shouldSkip() {
 
 function shouldPickUp() {//my spaghetti code requires u to put this function after shouldSkip()
     if (middleCard.slice(1, 2) === "+" && !skippedRound) {
-        // console.log(`SO ITS A ${middleCard.slice(1, 2)}`)
-        skippedRound = true
         return true
     }
     else {
-        skippedRound = false
         return false
     }
 }
@@ -413,6 +405,7 @@ async function pickUp(hand) {
         remove(".botsMiddle") //refresh bots list
         await wait()
     }
+    skippedRound = true
 }
 
 function createHotbar(myHand, body) {
@@ -436,7 +429,6 @@ function checkIfWon(hand) {
         load("victory")
         console.log("YOU WON!!")
         won = true
-        enableButtons()
     }
 }
 
@@ -596,8 +588,7 @@ function load(menu, parameter) { //loads a premade menu
         const btn = document.createElement("button")
         btn.innerHTML = "win"
         btn.onclick = function() {
-            createHand()
-            myHand = []
+            myHand.splice(0, 1)
             remove("#hotbar")
             createHotbar(myHand, newBody)
             createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
