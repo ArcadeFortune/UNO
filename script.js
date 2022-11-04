@@ -1,23 +1,23 @@
-localStorage.setItem("totalPlayerCount", 1) //there is currently 1 player here
-var won = false //no one has won yet
-var skippedRound = false //no rounds have been skipped by the ㊀ card
-var disabled = false //all the buttons are ENabled
-var myHand = []
-// var middleCard //this line of code is infact useless, and i do not know why  
+localStorage.setItem("totalPlayerCount", 1); //there is currently 1 player here
+var won = false; //no one has won yet
+var skippedRound = false; //no rounds have been skipped by the ㊀ card
+var disabled = false; //all the buttons are ENabled
+var myHand = [];
+var middleCard; //this line of code is infact useless, and i do not know why
 var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
     "startLuck": localStorage.getItem("startLuck"),
     "roundSpeed": localStorage.getItem("roundSpeed"),
-    "fullReload": localStorage.getItem("fullReload"),
-} //if adding new settings, add them in 3 places: here, index.html and in load("settings")
+    "fullReload": localStorage.getItem("fullReload")
+}; //if adding new settings, add them in 3 places: here, index.html and in load("settings")
 
 var gameCards = [ //40 game cards
     "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9",
     "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9",
     "y0", "y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9",
-    "g0", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9",
-]
+    "g0", "g1", "g2", "g3", "g4", "g5", "g6", "g7", "g8", "g9"
+];
 
 var specialCards = [ //14 special game cards, I am thinking about adding the "Swap Hands Card" | the letters at the start is the color, r = red, etc. (d = darkGrey)
     "b+2", "b↺", "b㊀",
@@ -25,468 +25,462 @@ var specialCards = [ //14 special game cards, I am thinking about adding the "Sw
     "g+2", "g↺", "g㊀",
     "y+2", "y↺", "y㊀",
     "d⍟", "d+4",
-    "d⍟", "d+4",
-]
+    "d⍟", "d+4"
+];
 
-if (performance.navigation.type == performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
-    if (gameSettings.fullReload == 1) { //only full reloads when the user wants to.
-        window.location.href = "/UNO/index.html" //will go back to index.html
+if (performance.navigation.type === performance.navigation.TYPE_RELOAD) { //everytime page is reloaded:
+    if (gameSettings.fullReload === 1) { //only full reloads when the user wants to.
+        window.location.href = "/UNO/index.html"; //will go back to index.html
     }
 }
 
 class Bot {
     constructor() {        
-        localStorage.setItem("totalPlayerCount", parseInt(localStorage.getItem("totalPlayerCount")) + 1)
-        this.name = "Player " + localStorage.getItem("totalPlayerCount")
-        this.hand = createHand()
+        localStorage.setItem("totalPlayerCount", parseInt(localStorage.getItem("totalPlayerCount")) + 1);
+        this.name = "Player " + localStorage.getItem("totalPlayerCount");
+        this.hand = createHand();
     }
 
     //method
     print() {
-        return `I am ${this.name}`
+        return `I am ${this.name}`;
     }
 }
 
-var bots = createBots() //lets create our bots
-
-function remove(querySelector) { //usefull to remove html elements
-    document.querySelector(querySelector).remove()
-}
+var bots = createBots(); //lets create our bots
 
 function body() {
-    return document.querySelector("body")
+    return document.querySelector("body");
+    
+}
+
+function remove(querySelector) { //usefull to remove html elements
+    document.querySelector(querySelector).remove();
 }
 
 function firstCapital(string) { //usefull to capitalize the first letter in a string
-    return string[0].toUpperCase() + string.substring(1)
+    return string[0].toUpperCase() + string.substring(1);
 }
 
 function disableButtons() {
-    const inputs = document.querySelectorAll("button")
+    const inputs = document.querySelectorAll("button");
     for (var i = 0; i < inputs.length; i++) {
-        inputs[i].disabled = true
-        disabled = true
+        inputs[i].disabled = true;
+        disabled = true;
     }
 }
 
 function enableButtons() {
-    const inputs = document.querySelectorAll("button")
+    const inputs = document.querySelectorAll("button");
     for (var i = 0; i < inputs.length; i++) {
-        inputs[i].disabled = false
-        disabled = false
+        inputs[i].disabled = false;
+        disabled = false;
     }
 }
 
 function wait() {
     return new Promise(resolve => {
         setTimeout(() => {  
-            resolve('resolved')
+            resolve('resolved');
         }, gameSettings.roundSpeed * 100);
-    })
+    });
 }
 
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
-    const title = document.createElement(hx)
-    title.innerHTML = innerHTML
-    title.style.textDecoration = "underline"
+    const title = document.createElement(hx);
+    title.innerHTML = innerHTML;
+    title.style.textDecoration = "underline";
     if (isSubtitle) { //if specified that the title is a subtitle, then we should make it like a real subtitle
-        title.style.marginTop = "-20px"
-        title.style.textDecoration = "none" //I could shorten the code, but it would be less readable i think
+        title.style.marginTop = "-20px";
+        title.style.textDecoration = "none"; //I could shorten the code, but it would be less readable i think
     }
-    body.appendChild(title)
+    body.appendChild(title);
 }
 
 function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a button that loads what you want it to load when you create it somewhere
-    const button = document.createElement("button")
-    button.innerHTML = innerHTML
+    const button = document.createElement("button");
+    button.innerHTML = innerHTML;
     button.onclick = function () {
         if (consoleLog !== undefined) {
-            console.log(consoleLog)
+            console.log(consoleLog);
         }
-        window.location.href = "../" + whatToLoad + "/"
-    }
+        window.location.href = "../" + whatToLoad + "/";
+    };
 
-    body.appendChild(button)
+    body.appendChild(button);
 }
 
 function createSettings(text, jsontext, optionStart, optionEnd, selectedOption, body) { //creates a setting that will write into the global setting
-    const setAmountP = document.createElement("p")
-    const setAmount = document.createElement("select")
-    setAmountP.innerHTML = text
+    const setAmountP = document.createElement("p");
+    const setAmount = document.createElement("select");
+    setAmountP.innerHTML = text;
     setAmount.onblur = function () {
-        window.localStorage.setItem(jsontext, setAmount[setAmount.selectedIndex].value)//sets the new setting
-        console.log("changed game settings to: ", gameSettings)
-    }
+        window.localStorage.setItem(jsontext, setAmount[setAmount.selectedIndex].value); //sets the new setting
+        console.log("changed game settings to: ", gameSettings);
+    };
     
     for (let i = optionStart; i < optionEnd; i++){ //Card amount option picker
-        const setAmountOption = document.createElement("option")
-        setAmountOption.innerHTML = i
+        const setAmountOption = document.createElement("option");
+        setAmountOption.innerHTML = i;
         if (i == selectedOption) {
-            setAmountOption.selected = true
+            setAmountOption.selected = true;
         }
 
-        setAmount.append(setAmountOption)
+        setAmount.append(setAmountOption);
     }
 
-    setAmountP.appendChild(setAmount)
-    body.appendChild(setAmountP)
+    setAmountP.appendChild(setAmount);
+    body.appendChild(setAmountP);
 }
 
 function createForm(body) {
-    const form = document.createElement("form")
-    const div = document.createElement("div")
-    div.id = "login"
-    div.style.width = "170px"
+    const form = document.createElement("form");
+    const div = document.createElement("div");
+    div.id = "login";
+    div.style.width = "170px";
 
-    form.action = "/UNO/test.php"
-    form.method = "post"
+    form.action = "/UNO/test.php";
+    form.method = "post";
 
-    createLogin("username", form)
-    createLogin("password", form)
-    createSubmitButton(form)
-    createRemeberButton(form)
+    createLogin("username", form);
+    createLogin("password", form);
+    createSubmitButton(form);
+    createRemeberButton(form);
 
-    div.appendChild(form)
-    body.appendChild(div)
+    div.appendChild(form);
+    body.appendChild(div);
 }
 
 function createLogin(type, body) {
-    const label = document.createElement("label")
-    const login = document.createElement("input")
+    const label = document.createElement("label");
+    const login = document.createElement("input");
     
-    label.for = type
-    label.innerHTML = firstCapital(type)
+    label.for = type;
+    label.innerHTML = firstCapital(type);
 
-    // login.style.display = "inline-block"
-    login.placeholder = "Enter " + firstCapital(type)
-    login.name = type
-    login.type = type
-    login.required = false
+    login.placeholder = "Enter " + firstCapital(type);
+    login.name = type;
+    login.type = type;
+    login.required = false;
 
-    // login.appendChild(label)
-    body.appendChild(label)
-    body.appendChild(login)
+    body.appendChild(label);
+    body.appendChild(login);
 }
 
 function createSubmitButton(body) {
-    const button = document.createElement("button")
-    button.type = "submit"
-    button.innerHTML = "Log In"
+    const button = document.createElement("button");
+    button.type = "submit";
+    button.innerHTML = "Log In";
 
-    body.appendChild(button)
+    body.appendChild(button);
 }
 
 function createRemeberButton(body) {
-    const label = document.createElement("label")
-    const input = document.createElement("input")
-    input.type = "checkbox"
-    input.checked = false
-    input.name = "remeber"
-    label.appendChild(input)
-    label.appendChild(document.createTextNode("Remeber Me"))
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = false;
+    input.name = "remeber";
+    label.appendChild(input);
+    label.appendChild(document.createTextNode("Remeber Me"));
 
-    body.appendChild(label)
+    body.appendChild(label);
 }
 
 function createHand(amount, allowSpecial) { //creates X cards according to the set settings
-    let myHand = []
+    let myHand = [];
     if (amount == undefined) {
-        amount = gameSettings.startCardAmount
-        allowSpecial = true
+        amount = gameSettings.startCardAmount;
+        allowSpecial = true;
     }
-    // if (amount === true) { //if there is no parameter: draws full hand, if there is one: draw only 1 card (its for the starting card)
-    //     amount = gameSettings.startCardAmount
-    // } else {
-    //     amount = 1
-    // }
     for (let i = 0 + (gameSettings.startCardAmount - amount); i < gameSettings.startCardAmount; i++) { //draws you the cards
         if (allowSpecial === true) {
-            amount = 0 //so the cardgiver gives one card and allows special
+            amount = 0; //so the cardgiver gives one card and allows special
         }
         if ((Math.random() * 10) < gameSettings.startLuck && amount == 0) { //Math.random() decides if you get a special cards depending on how high your luck is
-            myHand.push(specialCards[Math.floor(Math.random() * specialCards.length)])
+            myHand.push(specialCards[Math.floor(Math.random() * specialCards.length)]);
         }
         else {
-            myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)])
+            myHand.push(gameCards[Math.floor(Math.random() * gameCards.length)]);
         }
     }
-    return myHand
+
+    return myHand;
 }
 
 function createMiddle(body, card) { //card here is an array
-    const div = document.createElement("div")
-    div.classList.add("middleCard")
+    const div = document.createElement("div");
+    div.classList.add("middleCard");
     div.style.cssText = `
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-    `
-    
-    middleCard = createCard(card[0], div) //btw card is an array so you make sure to make the parameter a string
-    if (document.querySelectorAll(".middleCard").length > 0) { //if its not the first card being rendered:
-        let rng = Math.random() * 10
+    `;
+    middleCard = createCard(card[0], div); //btw card is an array so you make sure to make the parameter a string
+    if (document.querySelectorAll(".middleCard").length > 0); { //if its not the first card being rendered:
+        let rng = Math.random() * 10;
         if (Math.random() > 0.5) { //gives it some rotation to the otherside
-            rng *= -1
+            rng *= -1;
         }
-        div.style.rotate = rng + "deg" //changes the next card rotation. (between -10 and 10 degrees)
+        div.style.rotate = rng + "deg"; //changes the next card rotation. (between -10 and 10 degrees)
     }
 
-    body.appendChild(div) 
+    body.appendChild(div);
 }
 
 function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS the given card
     //card is a string remeber!!
-    const button = document.createElement("button")
-    disabled ? button.disabled = true : null
+    const button = document.createElement("button");
+    disabled ? button.disabled = true : null;
     if (typeof playableHand === 'object' && givesCard === undefined) {
         button.onclick = function () {
-            playCard(card, playableHand, realBody) //geez thats some garbage code but it works aaah
-        }
+            playCard(card, playableHand, realBody); //geez thats some garbage code but it works aaah
+        };
     } else if (givesCard !== undefined) {
         button.onclick = function () {
-            let myCard = createHand(1, true) 
-            console.log("↑ You picked the card", myCard[0] + "!")
-            playableHand.push(myCard[0])
-            remove("#hotbar")
-            createHotbar(playableHand, realBody)
-            botsTurn(true)
-        }
+            let myCard = createHand(1, true) ;
+            console.log("↑ You picked the card", myCard[0] + "!");
+            playableHand.push(myCard[0]);
+            remove("#hotbar");
+            createHotbar(playableHand, realBody);
+            botsTurn(true);
+        };
     }    
-    button.style.height = "50px"
-    button.style.width = "30px"
-    button.innerHTML = card.slice(1)
-    colorIt(card, button)
+    button.style.height = "50px";
+    button.style.width = "30px";
+    button.innerHTML = card.slice(1);
+    colorIt(card, button);
         
-    body.appendChild(button)
-    return card
+    body.appendChild(button);
+    return card;
 }
 
 function isPlayable(card) { //checks if the card has the same color or number or is dark
     if (middleCard.includes(card.slice(0, 1)) || middleCard.includes(card.slice(1, 3)) || card.slice(0, 1) === "d") {
         if (middleCard.slice(0, 1) === "d") { //so u can't play a dark card while choosing
-            return false
+            return false;
         } else{
-            return true
+            return true;
         }
     } else {
-        return false
+        return false;
     }
 }
 
 function playCard(card, myHand, body, forced) { //card here is also an array
     //check if skipped
-    var valid = true //if its still true then bots will play next
+    var valid = true; //if its still true then bots will play next
     if (isPlayable(card) == true || forced == true) {//choose a color needs to override current middle     
         
-        console.log("↓ You played the card", card)
+        console.log("↓ You played the card", card);
         if (card.slice(0, 1) === "d") {
-            valid = false //bots will not play, when color has been chosen, then this will obv be skipped, so bots will play after color has been chosen
-            chooseColor(body, myHand, card.slice(1, 696969))
+            valid = false; //bots will not play, when color has been chosen, then this will obv be skipped, so bots will play after color has been chosen
+            chooseColor(body, myHand, card.slice(1, 696969));
         }
-        myHand.splice(myHand.indexOf(card), 1)
-        skippedRound = false
-        remove("#hotbar")
-        createHotbar(myHand, body)
-        createMiddle(body, [card]) //createMiddle() only accepts arrays idk why
+        myHand.splice(myHand.indexOf(card), 1);
+        skippedRound = false;
+        remove("#hotbar");
+        createHotbar(myHand, body);
+        createMiddle(body, [card]); //createMiddle() only accepts arrays idk why
     }
     
     else {
-        console.log("Not allowed to play, try picking another card!")
-        valid = false
+        console.log("Not allowed to play, try picking another card!");
+        valid = false;
     }
 
     //now its the bots turn
-    botsTurn(valid) //valid is here to check if ur picking a color or not
+    botsTurn(valid); //valid is here to check if ur picking a color or not
 }
 
 async function botsTurn(valid) {
     if (valid) { //prepare for spaghetti
-    disableButtons() //disables other input
+    disableButtons(); //disables other input
         if (!won) { //as soon as someone wins, everything stops
-            for (b in bots) { //every bot plays 1 card
+            for (var b in bots) { //every bot plays 1 card
                 if (!won) { //as soon as someone wins, everything stops more!!!
-                    var cantFind = false //once a card has been found, no longer searches for another card
-                    for (c in bots[b].hand) { //goes through the whole loop
+                    var cantFind = false; //once a card has been found, no longer searches for another card
+                    for (var c in bots[b].hand) { //goes through the whole loop
                         if (shouldSkip()) {
-                            console.log(`㊀ ${bots[b].name} got blocked`)
-                            cantFind = true //and then it should stop finding other cards
-                            skippedRound = true
-                            break
+                            console.log(`㊀ ${bots[b].name} got blocked`);
+                            cantFind = true; //and then it should stop finding other cards
+                            skippedRound = true;
+                            break;
                         }
                         else if (shouldPickUp()) {
-                            console.log(`${middleCard.slice(1, 3)} ${bots[b].name} has to pick up ${middleCard.slice(2,3)} cards`)
-                            await pickUp(bots[b].hand)
-                            skippedRound = true
-                            cantFind = true //and then it should stop finding other cards
-                            break
+                            console.log(`${middleCard.slice(1, 3)} ${bots[b].name} has to pick up ${middleCard.slice(2,3)} cards`);
+                            await pickUp(bots[b].hand);
+                            skippedRound = true;
+                            cantFind = true; //and then it should stop finding other cards
+                            break;
                         } else if (isPlayable(bots[b].hand[c])) {
-                            botPlaysCard(bots[b], c) //the bot plays his found card
-                            cantFind = true //and then it should stop finding other cards
-                            break
+                            botPlaysCard(bots[b], c); //the bot plays his found card
+                            cantFind = true; //and then it should stop finding other cards
+                            break;
                         }
                     }
                     if (!cantFind) {
-                        botPicksCard(bots[b])
+                        botPicksCard(bots[b]);
                     }
-                    createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-                    remove(".botsMiddle") //refresh bots list
-                    await wait()                      
+                    createBotsMiddle(body(), bots); //refresh bots list
+                    remove(".botsMiddle"); //refresh bots list
+                    await wait();
                 }
             }
             if (shouldSkip()) {
-                console.log("㊀ You have been blocked")
-                skippedRound = true
-                botsTurn(true)
+                console.log("㊀ You have been blocked");
+                skippedRound = true;
+                botsTurn(true);
             } else if (shouldPickUp()) {
-                console.log(`+${middleCard.slice(2, 3)} You have to pick up ${middleCard.slice(2, 3)} cards`)
-                await pickUp(myHand, true)
-                botsTurn(true)
+                console.log(`+${middleCard.slice(2, 3)} You have to pick up ${middleCard.slice(2, 3)} cards`);
+                await pickUp(myHand, true);
+                botsTurn(true);
             }
-            console.log(`Here are the current bots: `, bots, "\n-----------------------------------") //u could delete this line
+            console.log(`Here are the current bots: `, bots, "\n-----------------------------------"); //u could delete this line
         }
     }
-    enableButtons()
+    enableButtons();
 }
 
 function botPlaysCard(bot, whichCardIndex) {
-    const randomColor = createHand(1, false)[0].slice(0, 1) //choose a random color to pick when choosing
+    const randomColor = createHand(1, false)[0].slice(0, 1); //choose a random color to pick when choosing
     if (bot.hand[whichCardIndex].slice(0, 1) === "d") { //if bot happens to play a chooser card
-        createMiddle(document.querySelector("body"), [randomColor + bot.hand[whichCardIndex].slice(1, 696969)]) //places bots card
+        createMiddle(body(), [randomColor + bot.hand[whichCardIndex].slice(1, 696969)]); //places bots card
     } else {
-        createMiddle(document.querySelector("body"), [bot.hand[whichCardIndex]]) //places bots card
+        createMiddle(body(), [bot.hand[whichCardIndex]]); //places bots card
     }
-    console.log(`↓ ${bot.name} plays ${bot.hand[whichCardIndex]}`)
-    skippedRound = false
-    bot.hand.splice(whichCardIndex, 1) //remove card from bots hand
-    checkIfBotWins(bot) //check if bot wins
+    console.log(`↓ ${bot.name} plays ${bot.hand[whichCardIndex]}`);
+    skippedRound = false;
+    bot.hand.splice(whichCardIndex, 1); //remove card from bots hand
+    checkIfBotWins(bot); //check if bot wins
 }
 
 function botPicksCard(bot) {    
-    let card = createHand(1, true) //creates a quick card
-    console.log(`↑ ${bot.name} picks ${card[0]}`)
-    bot.hand.push(card[0]) //adds card to the bots hand
+    let card = createHand(1, true); //creates a quick card
+    console.log(`↑ ${bot.name} picks ${card[0]}`);
+    bot.hand.push(card[0]); //adds card to the bots hand
 }
 
 function checkIfBotWins(bot) {
     if(bot.hand.length === 0) { //if bots has no cards left
-        console.log(`BOT ${bot.name} WONNNNNNNNNNNNNNNNNNNNN`)
-        won = true //sets global variable 'won' to true
-        load("victory", bot.name) //loads victory screen
+        console.log(`BOT ${bot.name} WONNNNNNNNNNNNNNNNNNNNN`);
+        won = true; //sets global variable 'won' to true
+        load("victory", bot.name); //loads victory screen
     }
 }
 
 function shouldSkip() { 
     if (middleCard.slice(1, 6969) === "㊀" && !skippedRound) { //skips this round
-        return true
+        return true;
     }
     else {
-        return false
+        return false;
     }
 }
 
 function shouldPickUp() {//my spaghetti code requires u to put this function after shouldSkip()
     if (middleCard.slice(1, 2) === "+" && !skippedRound) {
-        return true
+        return true;
     }
     else {
-        return false
+        return false;
     }
 }
 
 async function pickUp(hand, graphically) { //make it nicely showable
-    var graphy = middleCard.slice(2, 3)
+    var graphy = middleCard.slice(2, 3);
     if (graphically) {
-        const fillercard = "a" + middleCard.slice(1, 3)
+        const fillercard = "a" + middleCard.slice(1, 3);
         for (var i = 0; i < middleCard.slice(2, 3); i++) {
-            hand.push(fillercard)
-            remove("#hotbar")
-            createHotbar(myHand, document.querySelector("body"))
+            hand.push(fillercard);
+            remove("#hotbar");
+            createHotbar(myHand, body());
         }
     }
 
-    for (var i = 0; i < middleCard.slice(2, 3); i++) {
-        const card = createHand(1, true) //returns an array btw
-        console.log("↑ Picking up the card", card[0] + "...")
+    for (var g = 0; g < middleCard.slice(2, 3); g++) {
+        const card = createHand(1, true); //returns an array btw
+        console.log("↑ Picking up the card", card[0] + "...");
 
         if (graphically) { //replaces the fillercards slowly
-            hand.splice(-graphy, 1, card[0])
-            console.log("splicing card at", -graphy)
-            graphy -= 1
+            hand.splice(-graphy, 1, card[0]);
+            console.log("splicing card at", -graphy);
+            graphy -= 1;
         } else {
-            hand.push(card[0])
+            hand.push(card[0]);
         }
 
-        createHotbar(myHand, document.querySelector("body"))
-        remove("#hotbar")
-        createBotsMiddle(document.querySelector("body"), bots) //refresh bots list
-        remove(".botsMiddle") //refresh bots list
-        await wait()
+        createHotbar(myHand, body());
+        remove("#hotbar");
+        createBotsMiddle(body(), bots); //refresh bots list
+        remove(".botsMiddle"); //refresh bots list
+        await wait();
     }
-    skippedRound = true
+    skippedRound = true;
 }
 
 function createHotbar(myHand, body) {
-    const p = document.createElement("p")
-    p.id = "hotbar"
+    const p = document.createElement("p");
+    p.id = "hotbar";
     p.style.cssText = `
         position: absolute;
         left: 50%;
         top: 90%;
         transform: translate(-50%, -90%);
-    `
-    myHand.map((card) => createCard(card, p, myHand, body))
-    body.appendChild(p)
-    checkIfWon(myHand)
+    `;
+    myHand.map((card) => createCard(card, p, myHand, body));
+    body.appendChild(p);
+    checkIfWon(myHand);
 
-    return p
+    return p;
 }
 
 function checkIfWon(hand) {
     if (hand.length === 0) {
-        load("victory")
-        console.log("YOU WON!!")
-        won = true
+        load("victory");
+        console.log("YOU WON!!");
+        won = true;
     }
 }
 
 function createSideMiddle(myHand, body) {
-    const div = document.createElement("div")
-    div.classList.add("middleCard")
+    const div = document.createElement("div");
+    div.classList.add("middleCard");
     div.style.cssText = `
         position: absolute;
         left: 30%;
         top: 50%;
         transform: translate(-50%, -50%);
-    `
-    createCard("a✦", div , myHand, body, true) //the render removes the first letter btw
+    `;
+    createCard("a✦", div , myHand, body, true); //the render removes the first letter btw
     
-    body.appendChild(div) 
+    body.appendChild(div);
 }
 
 function colorIt(colorString, what) {
     if (colorString.includes("g")) {
-        what.style.backgroundColor = "lightGreen"
+        what.style.backgroundColor = "lightGreen";
     } else if (colorString.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
-        what.style.backgroundColor = "red"
+        what.style.backgroundColor = "red";
     } else if (colorString.includes("y")) {
-        what.style.backgroundColor = "yellow"
+        what.style.backgroundColor = "yellow";
     } else if (colorString.includes("b")) {
-        what.style.backgroundColor = "blue"
-        what.style.color = "white" //make it readable
+        what.style.backgroundColor = "blue";
+        what.style.color = "white"; //make it readable
 
     } else if (colorString.includes("a")) { //All the colors
-        what.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)"
+        what.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
 
     } else {
-        what.style.backgroundColor = "darkgrey"
+        what.style.backgroundColor = "darkgrey";
     }
 }
 
 function chooseColor(body, hand, number) {
-    console.log("Choose a color!")
-    const chooserDiv = document.createElement("div")
-    chooserDiv.id = "chooserDiv"
+    console.log("Choose a color!");
+    const chooserDiv = document.createElement("div");
+    chooserDiv.id = "chooserDiv";
     chooserDiv.style.cssText = `
         background-color: blue;
         position: absolute;
@@ -496,188 +490,187 @@ function chooseColor(body, hand, number) {
         height: 200px;
         width: 200px;
         z-index: 1;
-    `
+    `;
     //z-index makes it override everything else
-    createChooseButton("red", chooserDiv, hand, number)
-    createChooseButton("blue", chooserDiv, hand, number)
-    createChooseButton("green", chooserDiv, hand, number)
-    createChooseButton("yellow", chooserDiv, hand, number)
+    createChooseButton("red", chooserDiv, hand, number);
+    createChooseButton("blue", chooserDiv, hand, number);
+    createChooseButton("green", chooserDiv, hand, number);
+    createChooseButton("yellow", chooserDiv, hand, number);
 
-    body.appendChild(chooserDiv)
+    body.appendChild(chooserDiv);
 }
 
 function createChooseButton(color, div, hand, number) { //make sure color is a css accepted string
-    const chooseColor = document.createElement("button")
-    chooseColor.innerHTML = "CHOOSE " + color.toUpperCase()
+    const chooseColor = document.createElement("button");
+    chooseColor.innerHTML = "CHOOSE " + color.toUpperCase();
     chooseColor.style.cssText = `
         height: 100px;
         width: 100px;
-    `
+    `;
     chooseColor.onclick = function() {
-        const card = color.slice(0, 1) + number //for playing the card by making it the correct color
-        console.log("You chose the color", color + "!")
-        hand.push("filler card because playCard() requires food")
-        playCard(card, hand, document.querySelector("body"), true) //i couldnt bother writing more paramteres for the body
-        remove("#chooserDiv")
-    }
-    colorIt(color, chooseColor) //color it
+        const card = color.slice(0, 1) + number; //for playing the card by making it the correct color
+        console.log("You chose the color", color + "!");
+        hand.push("filler card because playCard() requires food");
+        playCard(card, hand, body(), true); //i couldnt bother writing more paramteres for the body
+        remove("#chooserDiv");
+    };
+    colorIt(color, chooseColor); //color it
 
-    div.appendChild(chooseColor)
+    div.appendChild(chooseColor);
 }
 
 function createBots() { //creates all the bots neccessary
-    var bots = []
+    var bots = [];
 
     for (var i = 1; i <= gameSettings.startPlayerAmount - 1; ++i) { //creates a new Bot() depending on the setting
-        bots[i] = new Bot()
+        bots[i] = new Bot();
     }
-    return bots
+    return bots;
 }
 
 function createBotsMiddle(body, player) { //creates a list displaying all the bots
-    const ul = document.createElement("ul")
-    const div = document.createElement("div")
+    const ul = document.createElement("ul");
+    const div = document.createElement("div");
     div.style.cssText = `
         position: absolute;
         left: 70%;
         top: 50%;
         transform: translate(-50%, -50%);
-    `
-    div.className = "botsMiddle"
-    for (x in player) { //makes list bigger when there are more players (bots)
-        const li = document.createElement("li")  
-        li.innerHTML = `${player[x].name} [✦] x${player[x].hand.length}`
-        ul.appendChild(li)
+    `;
+    div.className = "botsMiddle";
+    for (var x in player) { //makes list bigger when there are more players (bots)
+        const li = document.createElement("li") ; 
+        li.innerHTML = `${player[x].name} [✦] x${player[x].hand.length}`;
+        ul.appendChild(li);
     }
 
-    div.appendChild(ul)
-    body.appendChild(div)
+    div.appendChild(ul);
+    body.appendChild(div);
 }
 
 function load(menu, parameter) { //loads a premade menu
     //creating important elements to remove / replace
-    const html = document.querySelector("html")
-    const oldBody = document.querySelector("body")
-    const newBody = document.createElement("body")
+    const oldBody = body();
+    const newBody = document.createElement("body");
     if (menu === "mainMenu") { //if you want to load the main page
-        createTitle("Welcome to UNO!", "h1", newBody)
-        createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true)
-        createButton("Start Game", "game", newBody, "starting game...")
-        createButton("Change settings", "settings", newBody, "opening settings...")    
-        createButton("Login", "login", newBody, "Logging in") 
+        createTitle("Welcome to UNO!", "h1", newBody);
+        createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true);
+        createButton("Start Game", "game", newBody, "starting game...");
+        createButton("Change settings", "settings", newBody, "opening settings...");
+        createButton("Login", "login", newBody, "Logging in");
         
-        const btn = document.createElement("button")
-        btn.innerHTML = "secret dev route"
+        const btn = document.createElement("button");
+        btn.innerHTML = "secret dev route";
         btn.onclick = function() {
-            window.location.href = "/UNO/test.html"
-        }
-        newBody.appendChild(btn)
+            window.location.href = "/UNO/test.html";
+        };
+        newBody.appendChild(btn);
 
     }
 
     if (menu === "settings") { //if you want to load the settings
-        createTitle("The Settings", "h1", newBody)
-        createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody) //i need to sync default settings with this (so i don't have to manually change both instances in the code)
-        createSettings("Total player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody)
-        createSettings("Luck: ", "startLuck", 0, 11, gameSettings.startLuck, newBody)
-        createSettings("Round Speed ", "roundSpeed", 0, 6, gameSettings.roundSpeed, newBody)
-        createSettings("Full Reload: ", "fullReload", 0, 2, gameSettings.fullReload, newBody)
-        createButton("Return to main menu", "mainMenu", newBody, "returning home...")
+        createTitle("The Settings", "h1", newBody);
+        createSettings("Card start amount: ", "startCardAmount", 3, 11, gameSettings.startCardAmount, newBody); //i need to sync default settings with this (so i don't have to manually change both instances in the code)
+        createSettings("Total player amount: ", "startPlayerAmount", 2, 11, gameSettings.startPlayerAmount, newBody);
+        createSettings("Luck: ", "startLuck", 0, 11, gameSettings.startLuck, newBody);
+        createSettings("Round Speed ", "roundSpeed", 0, 6, gameSettings.roundSpeed, newBody);
+        createSettings("Full Reload: ", "fullReload", 0, 2, gameSettings.fullReload, newBody);
+        createButton("Return to main menu", "mainMenu", newBody, "returning home...");
     }
 
     if (menu === "game") { //if you want the game to start
         if (gameSettings.startCardAmount  == null) { //makes sure the browser saves settings
-            console.log("no settings found")
-            window.location.href = "../" //redirects to index.html to reload settings
+            console.log("no settings found");
+            window.location.href = "../"; //redirects to index.html to reload settings
         }
-        localStorage.setItem("totalPlayerCount", 1) //make sure every game starts with the same totalPlayerCount
-        myHand = createHand() //creating
-        console.log("This is you hand: ", myHand)
+        localStorage.setItem("totalPlayerCount", 1); //make sure every game starts with the same totalPlayerCount
+        myHand = createHand(); //creating;
+        console.log("This is you hand: ", myHand);
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
         }
-        middleCard = createHand(1) //parameter makes it only draw 1 random card
-        console.log("Starting card will be: ", middleCard[0])
+        middleCard = createHand(1); //parameter makes it only draw 1 random card
+        console.log("Starting card will be: ", middleCard[0]);
         
-        createMiddle(newBody, middleCard)
+        createMiddle(newBody, middleCard);
 
-        createHotbar(myHand, newBody)
+        createHotbar(myHand, newBody);
 
-        createSideMiddle(myHand, newBody) //to collect cards when you cant play a card
+        createSideMiddle(myHand, newBody); //to collect cards when you cant play a card
 
-        createBotsMiddle(newBody, bots)
+        createBotsMiddle(newBody, bots);
         
-        const btn = document.createElement("button")
-        btn.innerHTML = "win"
+        const btn = document.createElement("button");
+        btn.innerHTML = "win";
         btn.onclick = function() {
-            myHand.splice(0, 1)
-            remove("#hotbar")
-            createHotbar(myHand, newBody)
-            createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
-        }
-        newBody.appendChild(btn)
+            myHand.splice(0, 1);
+            remove("#hotbar");
+            createHotbar(myHand, newBody);
+            createMiddle(newBody, ["r69"]); //createMiddle() only accepts arrays idk why
+        };
+        newBody.appendChild(btn);
         
-        const plus2 = document.createElement("button")
-        plus2.innerHTML = "loose"
+        const plus2 = document.createElement("button");
+        plus2.innerHTML = "loose";
         plus2.onclick = function() {
-            const cards = createHand(20, true)
-            for (x of cards) {
-                myHand.push(x)
+            const cards = createHand(20, true);
+            for (var x of cards) {
+                myHand.push(x);
             }
-            remove("#hotbar")
-            createHotbar(myHand, newBody)
-            createMiddle(newBody, ["r69"]) //createMiddle() only accepts arrays idk why
-        }
-        newBody.appendChild(plus2)
+            remove("#hotbar");
+            createHotbar(myHand, newBody);
+            createMiddle(newBody, ["r69"]); //createMiddle() only accepts arrays idk why
+        };
+        newBody.appendChild(plus2);
 
-        const plus3 = document.createElement("button")
-        plus3.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)"
-        plus3.innerHTML = "get + 8"
+        const plus3 = document.createElement("button");
+        plus3.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
+        plus3.innerHTML = "get + 8";
         plus3.onclick = function() {
-            createMiddle(newBody, ["r+8"])
-            pickUp(myHand, true)
-        }
-        newBody.appendChild(plus3)
+            createMiddle(newBody, ["r+8"]);
+            pickUp(myHand, true);
+        };
+        newBody.appendChild(plus3);
     }
 
     if (menu === "victory") { //if you want the vicotry screen
         if (!parameter) {
-            createTitle("You won!!!", "h1", newBody)
-            createButton("YAY!", "mainMenu", newBody, "returning to main menu...")
+            createTitle("You won!!!", "h1", newBody);
+            createButton("YAY!", "mainMenu", newBody, "returning to main menu...");
         } else{
-            createTitle(`${parameter} won!!!`, "h1", newBody)
-            createButton("next time!", "mainMenu", newBody, "returning to main menu...")
+            createTitle(`${parameter} won!!!`, "h1", newBody);
+            createButton("next time!", "mainMenu", newBody, "returning to main menu...");
         }
     }
 
     if (menu === "login") {
-        createTitle("Login", "h1", newBody)
-        createForm(newBody)
-        createButton("return", "mainMenu", newBody, "returning home")
+        createTitle("Login", "h1", newBody);
+        createForm(newBody);
+        createButton("return", "mainMenu", newBody, "returning home");
     }
 
     if (menu === "test") {
-        const btn = document.createElement("button")
-        btn.innerHTML = "secret dev route"
+        const btn = document.createElement("button");
+        btn.innerHTML = "secret dev route";
         btn.onclick = async function() {
-            disableButtons()
+            disableButtons();
             for (var i = 0; i < 5; i++) {
-                console.log(i)
-                await wait()
+                console.log(i);
+                await wait();
             }
-            enableButtons()
-        }
-        newBody.appendChild(btn)
+            enableButtons();
+        };
+        newBody.appendChild(btn);
 
-        const btn2 = document.createElement("button")
-        btn2.innerHTML = "what are you"
+        const btn2 = document.createElement("button");
+        btn2.innerHTML = "what are you";
         btn2.onclick = function() {
-              console.log("gay")
-        }
-        newBody.appendChild(btn2)
+              console.log("testt");
+        };
+        newBody.appendChild(btn2);
     }
 
     //replacing whatever happened above with the previous body
-    oldBody.replaceWith(newBody)
+    oldBody.replaceWith(newBody);
 }
 //found bugs:
 //✓ reloading in settings messes up bots count
