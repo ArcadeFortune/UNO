@@ -4,6 +4,8 @@ var skippedRound = false; //no rounds have been skipped by the ㊀ card
 var disabled = false; //all the buttons are ENabled
 var myHand = [];
 var middleCard; //this line of code is infact useless, and i do not know why
+var b = 0; //index for bot list
+var reversed = false; //here to check if the round is reversed or not
 var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
@@ -293,6 +295,7 @@ async function botsTurn(valid) {
         disableButtons(); //disables other input
         if (!won) { //as soon as someone wins, everything stops
             for (var b in bots) { //every bot plays 1 card
+
                 if (!won) { //as soon as someone wins, everything stops more!!!
                     if (await somethingHappened(bots[b], false)) {
                         skippedRound = true; //the round has been skipped
@@ -315,8 +318,13 @@ async function botsTurn(valid) {
                     }
                     createBotsMiddle(body(), bots); //refresh bots list
                     remove(".botsMiddle"); //refresh bots list
+                    reversed ? b-- : b++
                 }
+
+
             }
+
+
             if (await somethingHappened(myHand, true)) {
                 skippedRound = true; //the round has been skipped
                 botsTurn(true);
@@ -367,7 +375,12 @@ async function somethingHappened(hand, isHuman) {
         isHuman ? console.log(`+${middleCard.slice(2, 3)} You have to pick up ${middleCard.slice(2, 3)} cards`) : console.log(`${middleCard.slice(1, 3)} ${hand.name} has to pick up ${middleCard.slice(2,3)} cards`);
         isHuman ? await pickUp(hand, isHuman) : await pickUp(hand.hand, isHuman);
         return true;
-    } else {
+    }
+    // else if (shouldTurn()) {
+    //     console.log("SKIPPINGNGGGGGGGGGGGGG");
+    //     return true;
+    // }
+    else {
         return false;
     }
 }
@@ -378,6 +391,14 @@ function shouldSkip() {
     }
     else {
         return false;
+    }
+}
+
+function shouldTurn() {
+    if (middleCard.slice(1, 6969) === "↺" && !skippedRound) {
+        return true;
+    } else {
+        return false;   
     }
 }
 
@@ -524,7 +545,7 @@ function createChooseButton(color, div, hand, number) { //make sure color is a c
 function createBots() { //creates all the bots neccessary
     var bots = [];
 
-    for (var i = 1; i <= gameSettings.startPlayerAmount - 1; ++i) { //creates a new Bot() depending on the setting
+    for (var i = 0; i <= gameSettings.startPlayerAmount - 2; ++i) { //creates a new Bot() depending on the setting
         bots[i] = new Bot();
     }
     return bots;
@@ -612,7 +633,7 @@ function load(menu, parameter) { //loads a premade menu
         newBody.appendChild(btn);
         
         const plus2 = document.createElement("button");
-        plus2.innerHTML = "loose";
+        plus2.innerHTML = "lose";
         plus2.onclick = function() {
             const cards = createHand(20, true);
             for (var x of cards) {
@@ -651,29 +672,77 @@ function load(menu, parameter) { //loads a premade menu
     }
 
     if (menu === "test") {
-        const btn = document.createElement("button");
-        btn.innerHTML = "secret dev route";
-        btn.onclick = async function() {
-            disableButtons();
-            for (var i = 0; i < 5; i++) {
-                console.log(i);
+        // const btn = document.createElement("button");
+        // btn.innerHTML = "secret dev route";
+        // btn.onclick = async function() {
+        //     disableButtons();
+        //     for (var i = 0; i < 5; i++) {
+        //         console.log(i);
+        //         await wait();
+        //     }
+        //     enableButtons();
+        // };
+        // newBody.appendChild(btn);
+
+        // const btn2 = document.createElement("button");
+        // btn2.innerHTML = "what are you";
+        // btn2.onclick = function() {
+        //       console.log("testt");
+        // };
+        // newBody.appendChild(btn2);
+        window.z = 0
+        const btn5 = document.createElement("button");
+        btn5.innerHTML = "simulate uno round";
+        btn5.onclick = async function() {
+            console.log("heres the bot list:", list);
+            reversed ? z = list.length - 1 : z = 0
+            while (z < list.length) {
+                try {
+                    console.log(list[z].name)
+                } catch {
+                    break;
+                }                    
+                reversed ? z-- : z++
+                turn = list.indexOf(list[z])
                 await wait();
             }
-            enableButtons();
         };
-        newBody.appendChild(btn);
+        newBody.appendChild(btn5);
 
-        const btn2 = document.createElement("button");
-        btn2.innerHTML = "what are you";
-        btn2.onclick = function() {
-              console.log("testt");
+        // const btn3 = document.createElement("button");
+        // btn3.innerHTML = "select 2 from list";
+        // btn3.onclick = function() {
+        //     console.log(list[1]);
+        // };
+        // newBody.appendChild(btn3);
+
+        const btn4 = document.createElement("button");
+        btn4.innerHTML = "reverse List";
+        btn4.onclick = function() {
+            if (reversed) {
+                reversed = false
+                z += 2
+            } else {
+                reversed = true
+                z -= 2
+            }
         };
-        newBody.appendChild(btn2);
+        newBody.appendChild(btn4);
+
+        const btn6 = document.createElement("button");
+        btn6.innerHTML = "show list[z]";
+        btn6.onclick = function() {
+            console.log(list[z]);
+        };
+        newBody.appendChild(btn6);
+        
     }
 
     //replacing whatever happened above with the previous body
     oldBody.replaceWith(newBody);
 }
+var list = createBots()
+
 //found bugs:
 //✓ reloading in settings messes up bots count
 //✓ bots cant play dark cards
