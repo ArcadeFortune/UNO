@@ -267,6 +267,7 @@ function isPlayable(card) { //checks if the card has the same color or number or
 function playCard(card, myHand, body, forced) { //card here is also an array
     //check if skipped
     var valid = true; //if its still true then bots will play next
+    skippedRound = false
     if (isPlayable(card) == true || forced == true) {//choose a color needs to override current middle     
         
         console.log("↓ You played the card", card);
@@ -274,8 +275,11 @@ function playCard(card, myHand, body, forced) { //card here is also an array
             valid = false; //bots will not play, when color has been chosen, then this will obv be skipped, so bots will play after color has been chosen
             chooseColor(body, myHand, card.slice(1, 696969));
         }
+        if (card.slice(1, 2) === "↺") {
+            turn()
+            // skippedRound = true //why is this commented out but the other turn() appearance isnt commented out xd
+        }
         myHand.splice(myHand.indexOf(card), 1);
-        skippedRound = false
         remove("#hotbar");
         createHotbar(myHand, body);
         createMiddle(body, [card]); //createMiddle() only accepts arrays idk why
@@ -292,38 +296,39 @@ function playCard(card, myHand, body, forced) { //card here is also an array
 
 async function botsTurn(valid) {
     if (valid) { //prepare for spaghetti
+        reversed ? b = list.length - 1 : b = 0
         disableButtons(); //disables other input
         if (!won) { //as soon as someone wins, everything stops
-            for (var b in bots) { //every bot plays 1 card
-
-                if (!won) { //as soon as someone wins, everything stops more!!!
-                    if (await somethingHappened(bots[b], false)) {
-                        skippedRound = true; //the round has been skipped
-                        // cantFind = true; //and then it should stop finding other cards                        
-                    } else {
-                        var cantFind = false; //once a card has been found, no longer searches for another card
-                        for (var c in bots[b].hand) { //goes through the whole loop
-                            if (isPlayable(bots[b].hand[c])) {
-                                await wait()
-                                console.log("waiting");
-                                botPlaysCard(bots[b], c); //the bot plays his found card
-                                skippedRound = false;                     
-                                cantFind = true; //and then it should stop finding other cards
-                                break;
+            while (b < bots.length) { //every bot plays 1 card
+                try {
+                    if (!won) { //as soon as someone wins, everything stops more!!!
+                        if (await somethingHappened(bots[b], false)) {
+                            skippedRound = true; //the round has been skipped
+                            // cantFind = true; //and then it should stop finding other cards                        
+                        } else {
+                            var cantFind = false; //once a card has been found, no longer searches for another card
+                            for (var c in bots[b].hand) { //goes through the whole loop
+                                if (isPlayable(bots[b].hand[c])) {
+                                    await wait()
+                                    botPlaysCard(bots[b], c); //the bot plays his found card
+                                    skippedRound = false;                     
+                                    cantFind = true; //and then it should stop finding other cards
+                                    break;
+                                }
+                            }
+                            if (!cantFind) {
+                                botPicksCard(bots[b]);
                             }
                         }
-                        if (!cantFind) {
-                            botPicksCard(bots[b]);
-                        }
+                        createBotsMiddle(body(), bots); //refresh bots list
+                        remove(".botsMiddle"); //refresh bots list
+                        reversed ? b-- : b++
                     }
-                    createBotsMiddle(body(), bots); //refresh bots list
-                    remove(".botsMiddle"); //refresh bots list
-                    reversed ? b-- : b++
                 }
-
-
+                catch {
+                    break;
+                }
             }
-
 
             if (await somethingHappened(myHand, true)) {
                 skippedRound = true; //the round has been skipped
@@ -345,6 +350,12 @@ function botPlaysCard(bot, whichCardIndex) {
     } else {
         createMiddle(body(), [bot.hand[whichCardIndex]]); //places bots card
     }
+    if (bot.hand[whichCardIndex].slice(1, 2) === "↺") {
+        console.log("TURNINGGGGGG");
+        turn()
+        skippedRound = true
+    }
+
     console.log(`↓ ${bot.name} plays ${bot.hand[whichCardIndex]}`);
     bot.hand.splice(whichCardIndex, 1); //remove card from bots hand
     checkIfBotWins(bot); //check if bot wins
@@ -367,19 +378,20 @@ function checkIfBotWins(bot) {
 async function somethingHappened(hand, isHuman) {
     if (shouldSkip()) {
         await wait();
-        console.log("waiting");
         isHuman ? console.log("㊀ You have been blocked") : console.log(`㊀ ${hand.name} got blocked`);
         return true;
     }
     else if (shouldPickUp()) {
         isHuman ? console.log(`+${middleCard.slice(2, 3)} You have to pick up ${middleCard.slice(2, 3)} cards`) : console.log(`${middleCard.slice(1, 3)} ${hand.name} has to pick up ${middleCard.slice(2,3)} cards`);
-        isHuman ? await pickUp(hand, isHuman) : await pickUp(hand.hand, isHuman);
+        isHuman ? await pickUp(hand, isHuman) : await pickUp(hand.hand, isHuman); //notice the hand.hand
         return true;
     }
     // else if (shouldTurn()) {
-    //     console.log("SKIPPINGNGGGGGGGGGGGGG");
+    //     console.log("TURNINGGGGGG");
+    //     turn();        
+    //     skippedRound = true;
     //     return true;
-    // }
+    // } //turn() will be executed as soon as a player plays the reverse card
     else {
         return false;
     }
@@ -422,7 +434,6 @@ async function pickUp(hand, graphically) { //make it nicely showable
         }
     }
     await wait()
-    console.log("waiting");
     for (var g = 0; g < middleCard.slice(2, 3); g++) {
         const card = createHand(1, true); //returns an array btw
         console.log("↑ Picking up a card...");
@@ -439,7 +450,14 @@ async function pickUp(hand, graphically) { //make it nicely showable
         createBotsMiddle(body(), bots); //refresh bots list
         remove(".botsMiddle"); //refresh bots list
         await wait();
-        console.log("waiting");
+    }
+}
+
+function turn() {
+    if (reversed) {
+        reversed = false
+    } else {
+        reversed = true
     }
 }
 
@@ -703,7 +721,6 @@ function load(menu, parameter) { //loads a premade menu
                     break;
                 }                    
                 reversed ? z-- : z++
-                turn = list.indexOf(list[z])
                 await wait();
             }
         };
