@@ -6,6 +6,7 @@ var myHand = [];
 var middleCard; //this line of code is infact useless, and i do not know why
 var b = 0; //index for bot list
 var reversed = false; //here to check if the round is reversed or not
+var allowedToWin = false; //you are allowed to win when you shout UNO!
 var gameSettings = { //get default settings from index.html
     "startCardAmount": localStorage.getItem("startCardAmount"),
     "startPlayerAmount": localStorage.getItem("startPlayerAmount"),
@@ -47,7 +48,7 @@ class Bot {
 var bots = createBots(); //lets create our bots
 
 function body() {
-    return document.querySelector("body");
+    return document.querySelector("#newBody");
 }
 
 function remove(querySelector) { //usefull to remove html elements
@@ -80,6 +81,33 @@ function wait() {
             resolve('resolved');
         }, gameSettings.roundSpeed * 100);
     });
+}
+
+function turn() {
+    if (reversed) {
+        reversed = false
+    } else {
+        reversed = true
+    }
+}
+
+function checkIfUno() {
+    if (myHand.length === 1) {
+        console.log("HELOOOOOOOOOOOOOOOO");
+        // createCanvas();
+    }
+}
+
+function checkIfWon(hand) {
+    if (hand.length === 0) {
+        load("victory");
+        console.log("YOU WON!!");
+        won = true;
+    }
+}
+
+function createUno() {
+
 }
 
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
@@ -183,6 +211,40 @@ function createRemeberButton(body) {
     body.appendChild(label);
 }
 
+function createCanvas() {
+    var id = null;
+    var size = 0;
+    const maxSize = 80
+    const canvas = document.createElement("canvas");
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    canvas.id = "uno";
+    canvas.width = maxSize;
+    canvas.height = maxSize;    
+    canvas.style.cssText = `
+        position: absolute;
+        object-position: 20% 80%;
+        border: 1px solid #000000;
+        transform: scale(1);
+    `;
+    // clearInterval(id);
+    // id = setInterval(spawn, 10);
+
+    // function spawn() {
+    //     if (size >= 1) {
+    //         console.log("a")
+    //         clearInterval(id);
+    //     }
+    //     else {
+    //         console.log(size)
+    //         size += 0.1;
+    //         canvas.style.transform = `scale(${size})`
+    //     }
+    // }
+    newBody.appendChild(canvas)
+}
+
+
 function createHand(amount, allowSpecial) { //creates X cards according to the set settings
     let myHand = [];
     if (amount == undefined) {
@@ -228,7 +290,7 @@ function createMiddle(body, card) { //card here is an array
 function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS the given card
     //card is a string remeber!!
     const button = document.createElement("button");
-    disabled ? button.disabled = true : null;
+    disabled ? button.disabled = true : button.disabled = false;
     if (typeof playableHand === 'object' && givesCard === undefined) {
         button.onclick = function () {
             playCard(card, playableHand, realBody); //geez thats some garbage code but it works aaah
@@ -453,14 +515,6 @@ async function pickUp(hand, graphically) { //make it nicely showable
     }
 }
 
-function turn() {
-    if (reversed) {
-        reversed = false
-    } else {
-        reversed = true
-    }
-}
-
 function createHotbar(myHand, body) {
     const p = document.createElement("p");
     p.id = "hotbar";
@@ -472,17 +526,10 @@ function createHotbar(myHand, body) {
     `;
     myHand.map((card) => createCard(card, p, myHand, body));
     body.appendChild(p);
+    checkIfUno();
     checkIfWon(myHand);
 
     return p;
-}
-
-function checkIfWon(hand) {
-    if (hand.length === 0) {
-        load("victory");
-        console.log("YOU WON!!");
-        won = true;
-    }
 }
 
 function createSideMiddle(myHand, body) {
@@ -591,8 +638,18 @@ function createBotsMiddle(body, player) { //creates a list displaying all the bo
 
 function load(menu, parameter) { //loads a premade menu
     //creating important elements to remove / replace
-    const oldBody = body();
-    const newBody = document.createElement("body");
+    const oldBody = document.querySelector("body");
+    const body = document.createElement("body");
+    const newBody = document.createElement("div")
+    newBody.id = "newBody"
+
+    // newBody.style.cssText = `
+    
+    // position: relative;
+    // background-color: green;
+    // max-width: 800px;
+    // min-height: 340px;
+    // `
     if (menu === "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody);
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true);
@@ -620,6 +677,7 @@ function load(menu, parameter) { //loads a premade menu
     }
 
     if (menu === "game") { //if you want the game to start
+        
         if (gameSettings.startCardAmount  == null) { //makes sure the browser saves settings
             console.log("no settings found");
             window.location.href = "../"; //redirects to index.html to reload settings
@@ -756,7 +814,8 @@ function load(menu, parameter) { //loads a premade menu
     }
 
     //replacing whatever happened above with the previous body
-    oldBody.replaceWith(newBody);
+    body.appendChild(newBody)
+    oldBody.replaceWith(body);
 }
 var list = createBots()
 
