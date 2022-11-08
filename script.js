@@ -47,6 +47,12 @@ class Bot {
 
 var bots = createBots(); //lets create our bots
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+  }
+
 function body() {
     return document.querySelector("#newBody");
 }
@@ -227,20 +233,20 @@ function createCanvas() {
         border: 1px solid #000000;
         transform: scale(1);
     `;
-    // clearInterval(id);
-    // id = setInterval(spawn, 10);
+    clearInterval(id);
+    id = setInterval(spawn, 10);
 
-    // function spawn() {
-    //     if (size >= 1) {
-    //         console.log("a")
-    //         clearInterval(id);
-    //     }
-    //     else {
-    //         console.log(size)
-    //         size += 0.1;
-    //         canvas.style.transform = `scale(${size})`
-    //     }
-    // }
+    function spawn() {
+        if (size >= 1) {
+            console.log("a")
+            clearInterval(id);
+        }
+        else {
+            console.log(size)
+            size += 0.1;
+            canvas.style.transform = `scale(${size})`
+        }
+    }
     newBody.appendChild(canvas)
 }
 
@@ -643,13 +649,13 @@ function load(menu, parameter) { //loads a premade menu
     const newBody = document.createElement("div")
     newBody.id = "newBody"
 
-    // newBody.style.cssText = `
+    newBody.style.cssText = `
     
-    // position: relative;
-    // background-color: green;
-    // max-width: 800px;
-    // min-height: 340px;
-    // `
+    position: relative;
+    background-color: green;
+    max-width: 800px;
+    min-height: 340px;
+    `
     if (menu === "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody);
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true);
@@ -784,13 +790,6 @@ function load(menu, parameter) { //loads a premade menu
         };
         newBody.appendChild(btn5);
 
-        // const btn3 = document.createElement("button");
-        // btn3.innerHTML = "select 2 from list";
-        // btn3.onclick = function() {
-        //     console.log(list[1]);
-        // };
-        // newBody.appendChild(btn3);
-
         const btn4 = document.createElement("button");
         btn4.innerHTML = "reverse List";
         btn4.onclick = function() {
@@ -810,6 +809,18 @@ function load(menu, parameter) { //loads a premade menu
             console.log(list[z]);
         };
         newBody.appendChild(btn6);
+
+        const btn3 = document.createElement("button");
+        btn3.innerHTML = "create thunder";
+        btn3.onclick = function() {
+            console.log("THUNDERING");
+            const coordsX = findCoords();
+            const coordsY = findCoords();
+            const canvas = makeCanvas(coordsX, coordsY);
+            newBody.appendChild(canvas);
+            thunder(coordsX, coordsY);
+        };
+        newBody.appendChild(btn3);
         
     }
 
@@ -819,9 +830,31 @@ function load(menu, parameter) { //loads a premade menu
 }
 var list = createBots()
 
+function findCoords() {
+    return getRandomInt(0, 70)
+}
+
+function makeCanvas(coordsX, coordsY) {
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = `
+        position: absolute;
+        border: 1px solid #000000;
+        height: 100px;
+        width: 100px;
+        top: ${coordsY}%;
+        left: ${coordsX}%;
+        transform: scale(1);
+    `;
+    return canvas
+} //top: 70% - 0%
+  //left: 70% - 0%
+function thunder(coordsX, coordsY) {
+    console.log(coordsX)
+    console.log(coordsY)
+}
 //found bugs:
 //✓ reloading in settings messes up bots count
 //✓ bots cant play dark cards
 //p2 places ㊀ card, p3 gets blocked, p4 picks a card, AND THE PLAYER 1 GETS BLOCKED!!
-//'sometimes' winning keeps the buttons disabled
+//when playing a skip turn card as the last, it keeps the buttons disabled 
 //when a bot plays a dark card, console.log() wont show which color it played
