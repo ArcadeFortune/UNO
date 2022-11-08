@@ -848,9 +848,50 @@ function makeCanvas(coordsX, coordsY) {
     return canvas
 } //top: 70% - 0%
   //left: 70% - 0%
-function thunder(coordsX, coordsY) {
+function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN sky gets light, THEN ground gets slightly unlight(while the thunder gets unlight), THEN all three get light, THEN all three get unlight
+    const html = document.querySelector("html")
+    var id = null;
+    var opacity = 0;
     console.log(coordsX)
     console.log(coordsY)
+    // html.append(createOverlay(0.1))
+    // canvas.id = "uno";
+    // canvas.width = maxSize;
+    // canvas.height = maxSize;    
+    // canvas.style.cssText = `
+    //     position: absolute;
+    //     object-position: 20% 80%;
+    //     border: 1px solid #000000;
+    //     transform: scale(1);
+    // `;
+    clearInterval(id);
+    id = setInterval(thunderOverlay, 10);
+
+    function thunderOverlay() {
+        if (opacity >= 1) {
+            console.log("max Opacity reached.")
+            clearInterval(id);
+        }
+        else {
+            console.log(opacity)
+            html.append(createOverlay(opacity))
+            opacity += 0.1;
+        }
+    }
+}
+
+function createOverlay(opacity) {
+    const overlay = document.createElement("div")
+    overlay.style.cssText = `    
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 90000;
+    background-color: white;
+    opacity: ${opacity};
+    `
+    return overlay
 }
 //found bugs:
 //✓ reloading in settings messes up bots count
