@@ -45,8 +45,6 @@ class Bot {
     }
 };
 
-document.querySelector("button").style.backgroundColor = "pink"
-
 var bots = createBots(); //lets create our bots
 
 function getRandomInt(min, max) {
@@ -138,7 +136,10 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
         }
         window.location.href = "../" + whatToLoad + "/";
     };
+    button.style.cssText = `
+    max-height: 30px;
 
+    `
     body.appendChild(button);
 }
 
@@ -555,6 +556,9 @@ function createSideMiddle(myHand, body) {
 }
 
 function colorIt(colorString, what) {
+    // what.style.display = "grid"; //it breaks everything
+
+
     if (colorString.includes("g")) {
         what.style.backgroundColor = "lightGreen";
     } else if (colorString.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
@@ -569,7 +573,7 @@ function colorIt(colorString, what) {
         what.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
 
     } else {
-        what.style.backgroundColor = "darkgrey";
+        what.style.backgroundColor = "darkGrey";
     }
 }
 
@@ -643,13 +647,24 @@ function createBotsMiddle(body, player) { //creates a list displaying all the bo
     div.appendChild(ul);
     body.appendChild(div);
 }
-
+// document.querySelector("html").style.cssText = `
+//     min-height: 100%;
+// `
 function load(menu, parameter) { //loads a premade menu
+    console.log(window.screen.width)
+    console.log(window.screen.height)
     //creating important elements to remove / replace
     const oldBody = document.querySelector("body");
     const body = document.createElement("body");
-    const newBody = document.createElement("div")
-    newBody.id = "newBody"
+    const newBody = document.createElement("div");
+    newBody.id = "newBody";
+    newBody.style.cssText = `
+    min-height: 100%;
+
+    `
+    html.style.minHeight = "100%";//useless
+
+
 
     // newBody.style.cssText = `
     
@@ -659,7 +674,9 @@ function load(menu, parameter) { //loads a premade menu
     // min-height: 340px;
     // `
     if (menu === "mainMenu") { //if you want to load the main page
-        createTitle("Welcome to UNO!", "h1", newBody);
+        const titleDiv = createDiv(80, 800, newBody, "");
+
+        createTitle("Welcome to UNO!", "h1", titleDiv);
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true);
         createButton("Start Game", "game", newBody, "starting game...");
         createButton("Change settings", "settings", newBody, "opening settings...");
@@ -691,6 +708,7 @@ function load(menu, parameter) { //loads a premade menu
             window.location.href = "../"; //redirects to index.html to reload settings
         }
         localStorage.setItem("totalPlayerCount", 1); //make sure every game starts with the same totalPlayerCount
+        html.style.background = "url(table.jpg)";
         myHand = createHand(); //creating;
         console.log("This is you hand: ", myHand);
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
@@ -737,6 +755,23 @@ function load(menu, parameter) { //loads a premade menu
             pickUp(myHand, true);
         };
         newBody.appendChild(plus3);
+
+        const uno = document.createElement("button");
+        uno.innerHTML = "create thunder";
+        uno.onclick = function() {
+            console.log("THUNDERING");
+            const coordsX = findCoords();
+            const coordsY = findCoords();
+            const canvas = makeCanvas(coordsX, coordsY);
+            // newBody.appendChild(canvas);
+            // thunder(coordsX, coordsY);
+
+            const button = document.querySelector("button");
+            button.appendChild(createBlackHole());
+
+
+        };
+        newBody.appendChild(uno);
     }
 
     if (menu === "victory") { //if you want the vicotry screen
@@ -756,6 +791,9 @@ function load(menu, parameter) { //loads a premade menu
     }
 
     if (menu === "test") {
+        newBody.style.cssText = `
+            min-height: 100%;   
+        `
         // const btn = document.createElement("button");
         // btn.innerHTML = "secret dev route";
         // btn.onclick = async function() {
@@ -830,6 +868,35 @@ function load(menu, parameter) { //loads a premade menu
     body.appendChild(newBody)
     oldBody.replaceWith(body);
 }
+
+function createBlackHole() {
+    const hole = document.createElement("div");
+    hole.style.cssText = `
+    background-color: black;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    `
+    return hole;
+
+}
+
+function createDiv(height, width, append, color) {
+    const div = document.createElement("div");
+    div.style.cssText = `
+    height: ${height}px;
+    width: ${width}px;
+    background-color: ${color};
+    `
+    append.append(div)
+    return div;
+
+}
+
+function createTitleDiv() {
+    
+}
+
 var list = createBots()
 
 function findCoords() {
@@ -915,6 +982,8 @@ function createOverlay(opacity) {
     `
     return overlay
 }
+//----------------CSS COMES HERE------------------
+const html = document.querySelector("html");
 //found bugs:
 //✓ reloading in settings messes up bots count
 //✓ bots cant play dark cards
