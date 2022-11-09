@@ -45,6 +45,8 @@ class Bot {
     }
 };
 
+document.querySelector("button").style.backgroundColor = "pink"
+
 var bots = createBots(); //lets create our bots
 
 function getRandomInt(min, max) {
@@ -649,13 +651,13 @@ function load(menu, parameter) { //loads a premade menu
     const newBody = document.createElement("div")
     newBody.id = "newBody"
 
-    newBody.style.cssText = `
+    // newBody.style.cssText = `
     
-    position: relative;
-    background-color: green;
-    max-width: 800px;
-    min-height: 340px;
-    `
+    // position: relative;
+    // background-color: green;
+    // max-width: 800px;
+    // min-height: 340px;
+    // `
     if (menu === "mainMenu") { //if you want to load the main page
         createTitle("Welcome to UNO!", "h1", newBody);
         createTitle("Made by ArcadeFortune; DESPykesfying#3794.", "h5", newBody, true);
@@ -867,26 +869,46 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
     clearInterval(id);
     id = setInterval(thunderOverlay, 10);
 
+
     function thunderOverlay() {
         if (opacity >= 1) {
-            console.log("max Opacity reached.")
+            console.log("max Opacity reached.")           
+            
+            var elements = document.querySelectorAll("button");   
+
+            for(i = 0, len = elements.length; i < len; i++) {   
+                elements[i].style.cssText = `
+                background-color: rgba(255,255,255, ${opacity});
+                `
+            }
+            // html.append(createOverlay(1, 0))
             clearInterval(id);
         }
         else {
             console.log(opacity)
-            html.append(createOverlay(opacity))
-            opacity += 0.1;
+            
+            var elements = document.querySelectorAll("button");   
+
+            for(i = 0, len = elements.length; i < len; i++) {   
+                elements[i].style.cssText = `
+                background-color: rgba(255,255,255, ${opacity});
+                `
+            }
+ 
+            // html.append(createOverlay(opacity))
+            opacity += 0.2;
         }
     }
 }
 
 function createOverlay(opacity) {
     const overlay = document.createElement("div")
-    overlay.style.cssText = `    
+    overlay.style.cssText = `
     height: 100%;
     width: 100%;
     position: absolute;
-    top: 0;
+    top: 0%;
+    left: 0%
     z-index: 90000;
     background-color: white;
     opacity: ${opacity};
