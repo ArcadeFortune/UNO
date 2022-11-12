@@ -137,6 +137,7 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
         window.location.href = "../" + whatToLoad + "/";
     };
     button.style.cssText = `
+    position: relative;
     max-height: 30px;
 
     `
@@ -313,9 +314,11 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
             createHotbar(playableHand, realBody);
             botsTurn(true);
         };
-    }    
-    button.style.height = "50px";
-    button.style.width = "30px";
+    }
+    button.style.cssText = `
+    width: 30px;
+    height: 50px;
+    `
     button.innerHTML = card.slice(1);
     colorIt(card, button);
         
@@ -529,10 +532,17 @@ function createHotbar(myHand, body) {
     p.id = "hotbar";
     p.style.cssText = `
         position: absolute;
-        left: 50%;
-        top: 90%;
-        transform: translate(-50%, -90%);
+        top: 80%;
+        width: 97%;
+        text-align: center;
+
     `;
+    // p.style.cssText = `
+    // text-align: center;
+    // line-height: 50%;
+    // position: relative;
+    // bottom: 0px;
+    // `
     myHand.map((card) => createCard(card, p, myHand, body));
     body.appendChild(p);
     checkIfUno();
@@ -589,7 +599,7 @@ function chooseColor(body, hand, number) {
         transform: translate(-50%, -50%);
         height: 200px;
         width: 200px;
-        z-index: 1;
+        z-index: 1;        
     `;
     //z-index makes it override everything else
     createChooseButton("red", chooserDiv, hand, number);
@@ -747,14 +757,16 @@ function load(menu, parameter) { //loads a premade menu
         };
         newBody.appendChild(plus2);
 
-        const plus3 = document.createElement("button");
-        plus3.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
-        plus3.innerHTML = "get + 8";
-        plus3.onclick = function() {
-            createMiddle(newBody, ["r+8"]);
-            pickUp(myHand, true);
-        };
-        newBody.appendChild(plus3);
+        // const plus3 = document.createElement("button");
+        // plus3.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
+        // plus3.innerHTML = "get + 8";
+        // plus3.onclick = function() {
+        //     createMiddle(newBody, ["r+8"]);
+        //     pickUp(myHand, true);
+        // };
+        // newBody.appendChild(plus3);
+
+        
 
         const uno = document.createElement("button");
         uno.innerHTML = "create thunder";
@@ -764,14 +776,21 @@ function load(menu, parameter) { //loads a premade menu
             const coordsY = findCoords();
             const canvas = makeCanvas(coordsX, coordsY);
             // newBody.appendChild(canvas);
-            // thunder(coordsX, coordsY);
-
-            const button = document.querySelector("button");
-            button.appendChild(createBlackHole());
-
+            thunder(coordsX, coordsY);
 
         };
         newBody.appendChild(uno);
+
+        const plus4 = document.createElement("button");
+        plus4.innerHTML = "get + 8";
+        plus4.onclick = function() {
+            const shine = document.querySelectorAll(".shine");
+                for (var i = 0; i < shine.length; i++) {
+                    shine[i].className = "";
+                    
+            }
+        };
+        newBody.appendChild(plus4);
     }
 
     if (menu === "victory") { //if you want the vicotry screen
@@ -923,6 +942,18 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
     var opacity = 0;
     console.log(coordsX)
     console.log(coordsY)
+    
+    const inputs = document.querySelectorAll("button");
+    console.log(inputs)
+    for (var i = 0; i < inputs.length; i++) {
+        console.log(inputs[i]);
+        inputs[i].className = "shine"
+        
+    }
+    const shine = document.querySelectorAll(".shine");
+        for (var i = 0; i < shine.length; i++) {
+            shine[i].style.backgroundColor = "pink";
+        }
     // html.append(createOverlay(0.1))
     // canvas.id = "uno";
     // canvas.width = maxSize;
@@ -933,39 +964,39 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
     //     border: 1px solid #000000;
     //     transform: scale(1);
     // `;
-    clearInterval(id);
-    id = setInterval(thunderOverlay, 10);
+    // clearInterval(id);
+    // id = setInterval(thunderOverlay, 10);
 
 
-    function thunderOverlay() {
-        if (opacity >= 1) {
-            console.log("max Opacity reached.")           
+    // function thunderOverlay() {
+    //     if (opacity >= 1) {
+    //         console.log("max Opacity reached.")           
             
-            var elements = document.querySelectorAll("button");   
+    //         var elements = document.querySelectorAll("button");   
 
-            for(i = 0, len = elements.length; i < len; i++) {   
-                elements[i].style.cssText = `
-                background-color: rgba(255,255,255, ${opacity});
-                `
-            }
-            // html.append(createOverlay(1, 0))
-            clearInterval(id);
-        }
-        else {
-            console.log(opacity)
+    //         for(i = 0, len = elements.length; i < len; i++) {   
+    //             elements[i].style.cssText = `
+    //             background-color: rgba(255,255,255, ${opacity});
+    //             `
+    //         }
+    //         // html.append(createOverlay(1, 0))
+    //         clearInterval(id);
+    //     }
+    //     else {
+    //         console.log(opacity)
             
-            var elements = document.querySelectorAll("button");   
+    //         var elements = document.querySelectorAll("button");   
 
-            for(i = 0, len = elements.length; i < len; i++) {   
-                elements[i].style.cssText = `
-                background-color: rgba(255,255,255, ${opacity});
-                `
-            }
+    //         for(i = 0, len = elements.length; i < len; i++) {   
+    //             elements[i].style.cssText = `
+    //             background-color: rgba(255,255,255, ${opacity});
+    //             `
+    //         }
  
-            // html.append(createOverlay(opacity))
-            opacity += 0.2;
-        }
-    }
+    //         // html.append(createOverlay(opacity))
+    //         opacity += 0.2;
+        // }
+    // }
 }
 
 function createOverlay(opacity) {
@@ -990,3 +1021,5 @@ const html = document.querySelector("html");
 //p2 places ㊀ card, p3 gets blocked, p4 picks a card, AND THE PLAYER 1 GETS BLOCKED!!
 //when playing a skip turn card as the last, it keeps the buttons disabled 
 //when a bot plays a dark card, console.log() wont show which color it played
+//middle card gets disabled while playing
+//when bot plays + card to win, it freezes OR when u pick a card and a bot wins, it freezes5
