@@ -319,6 +319,7 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
     width: 30px;
     height: 50px;
     `
+    button.className = card.slice(0, 1);
     button.innerHTML = card.slice(1);
     colorIt(card, button);
         
@@ -565,25 +566,25 @@ function createSideMiddle(myHand, body) {
     body.appendChild(div);
 }
 
-function colorIt(colorString, what) {
+function colorIt(colorString, card) {
     // what.style.display = "grid"; //it breaks everything
 
 
-    if (colorString.includes("g")) {
-        what.style.backgroundColor = "lightGreen";
+    if (colorString.includes("g") || colorString.includes("l")) {
+        card.style.backgroundColor = "rgba(48, 252, 82, 0.9)";
     } else if (colorString.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
-        what.style.backgroundColor = "red";
+        card.style.backgroundColor = "rgba(252, 25, 25, 0.9)";
     } else if (colorString.includes("y")) {
-        what.style.backgroundColor = "yellow";
+        card.style.backgroundColor = "rgba(255, 248, 51, 0.9)";
     } else if (colorString.includes("b")) {
-        what.style.backgroundColor = "blue";
-        what.style.color = "white"; //make it readable
+        card.style.backgroundColor = "rgba(48, 153, 252, 0.9)";
+        card.style.color = "white"; //make it readable
 
     } else if (colorString.includes("a")) { //All the colors
-        what.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
+        card.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
 
     } else {
-        what.style.backgroundColor = "darkGrey";
+        card.style.backgroundColor = "rgba(163, 163, 163, 0.9)";
     }
 }
 
@@ -784,10 +785,11 @@ function load(menu, parameter) { //loads a premade menu
         const plus4 = document.createElement("button");
         plus4.innerHTML = "get + 8";
         plus4.onclick = function() {
-            const shine = document.querySelectorAll(".shine");
-                for (var i = 0; i < shine.length; i++) {
-                    shine[i].className = "";
-                    
+            
+            const inputs = document.querySelectorAll("button");
+            for (var i = 0; i < inputs.length; i++) {
+                console.log(inputs[i].style.backgroundColor)
+                inputs[i].className = inputs[i].style.backgroundColor.slice(0, 1)
             }
         };
         newBody.appendChild(plus4);
@@ -939,21 +941,13 @@ function makeCanvas(coordsX, coordsY) {
 function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN sky gets light, THEN ground gets slightly unlight(while the thunder gets unlight), THEN all three get light, THEN all three get unlight
     const html = document.querySelector("html")
     var id = null;
-    var opacity = 0;
+    var id2 = null;
+    var cardOpacity = 0;
+    var backgroundOpacity = -1;
+    var cycle = false;
     console.log(coordsX)
     console.log(coordsY)
     
-    const inputs = document.querySelectorAll("button");
-    console.log(inputs)
-    for (var i = 0; i < inputs.length; i++) {
-        console.log(inputs[i]);
-        inputs[i].className = "shine"
-        
-    }
-    const shine = document.querySelectorAll(".shine");
-        for (var i = 0; i < shine.length; i++) {
-            shine[i].style.backgroundColor = "pink";
-        }
     // html.append(createOverlay(0.1))
     // canvas.id = "uno";
     // canvas.width = maxSize;
@@ -964,10 +958,49 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
     //     border: 1px solid #000000;
     //     transform: scale(1);
     // `;
-    // clearInterval(id);
-    // id = setInterval(thunderOverlay, 10);
+    clearInterval(id);
+    clearInterval(id2)
+    id = setInterval(shiningCards, 10);
+    id2 = setInterval(shiningGround, 10);
+    const inputs = document.querySelectorAll("button");
+    createOverlay(0);
 
+    function shiningCards() {
+        if (cardOpacity >= 2) {
+            if (cycle) {
+                console.log("max Opacity reached.");
+                
+                for (var i = 0; i < inputs.length; i++) {
+                    colorIt(inputs[i].className, inputs[i])  
+                }
 
+                clearInterval(id);
+            } else {
+                cardOpacity = 0;
+                cycle = true;
+            }
+        }
+        else {
+            cardOpacity += 0.01;
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`  
+                // console.log(inputs[i])  
+            }
+        }
+    }   
+
+    function shiningGround() {
+        if (backgroundOpacity >= 1) {
+            console.log("123");
+            clearInterval(id2);
+            document.querySelectorAll(".overlay").forEach((element) => element.remove());
+        }
+        else {
+            remove(".overlay");
+            createOverlay(backgroundOpacity);
+            backgroundOpacity += 0.01;
+        }
+    }
     // function thunderOverlay() {
     //     if (opacity >= 1) {
     //         console.log("max Opacity reached.")           
@@ -1011,7 +1044,8 @@ function createOverlay(opacity) {
     background-color: white;
     opacity: ${opacity};
     `
-    return overlay
+    overlay.className = "overlay"
+    document.querySelector("html").append(overlay);
 }
 //----------------CSS COMES HERE------------------
 const html = document.querySelector("html");
