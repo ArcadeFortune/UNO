@@ -137,9 +137,8 @@ function createButton(innerHTML, whatToLoad, body, consoleLog) { //creates a but
         window.location.href = "../" + whatToLoad + "/";
     };
     button.style.cssText = `
-    position: relative;
-    max-height: 30px;
-
+        position: relative;
+        max-height: 30px;
     `
     body.appendChild(button);
 }
@@ -318,6 +317,7 @@ function createCard(card, body, playableHand, realBody, givesCard) { //RENDERS t
     button.style.cssText = `
     width: 30px;
     height: 50px;
+    z-index: 200;
     `
     button.className = card.slice(0, 1);
     button.innerHTML = card.slice(1);
@@ -570,21 +570,21 @@ function colorIt(colorString, card) {
     // what.style.display = "grid"; //it breaks everything
 
 
-    if (colorString.includes("g") || colorString.includes("l")) {
-        card.style.backgroundColor = "rgba(48, 252, 82, 0.9)";
+    if (colorString.includes("g")) {
+        card.style.backgroundColor = "rgb(48, 252, 82)"; //green
     } else if (colorString.includes("r")) { //idk how to simplify this, I tried it with switch and case it didnt work :(
-        card.style.backgroundColor = "rgba(252, 25, 25, 0.9)";
+        card.style.backgroundColor = "rgb(252, 25, 25)"; //red
     } else if (colorString.includes("y")) {
-        card.style.backgroundColor = "rgba(255, 248, 51, 0.9)";
+        card.style.backgroundColor = "rgb(255, 248, 51)"; //yellow
     } else if (colorString.includes("b")) {
-        card.style.backgroundColor = "rgba(48, 153, 252, 0.9)";
+        card.style.backgroundColor = "rgb(48, 153, 252)"; //blue
         card.style.color = "white"; //make it readable
 
     } else if (colorString.includes("a")) { //All the colors
         card.style.backgroundImage = "linear-gradient(90deg, red, orange, yellow, lightgreen, blue)";
 
     } else {
-        card.style.backgroundColor = "rgba(163, 163, 163, 0.9)";
+        card.style.backgroundColor = "rgb(163, 163, 163)"; //grey
     }
 }
 
@@ -939,12 +939,14 @@ function makeCanvas(coordsX, coordsY) {
 } //top: 70% - 0%
   //left: 70% - 0%
 function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN sky gets light, THEN ground gets slightly unlight(while the thunder gets unlight), THEN all three get light, THEN all three get unlight
-    const html = document.querySelector("html")
-    var id = null;
-    var id2 = null;
+    const html = document.querySelector("html") 
+    var id = null; //light cards
+    var id2 = null; //light background
+    var id3 = null; //unlight cards
+    var id4 = null; //unlight background
     var cardOpacity = 0;
-    var backgroundOpacity = -1;
-    var cycle = false;
+    var backgroundOpacity = -0.6;
+    var finished = false;
     console.log(coordsX)
     console.log(coordsY)
     
@@ -958,47 +960,88 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
     //     border: 1px solid #000000;
     //     transform: scale(1);
     // `;
+    createOverlay(0);
     clearInterval(id);
-    clearInterval(id2)
+    clearInterval(id2);
+    var durationCard = 1.2;
+    var durationGround = 0.6;
+    var durationUnCard = 0.2;
+    var durationUnGround = 0;
     id = setInterval(shiningCards, 10);
     id2 = setInterval(shiningGround, 10);
     const inputs = document.querySelectorAll("button");
-    createOverlay(0);
 
     function shiningCards() {
-        if (cardOpacity >= 2) {
-            if (cycle) {
-                console.log("max Opacity reached.");
-                
-                for (var i = 0; i < inputs.length; i++) {
-                    colorIt(inputs[i].className, inputs[i])  
-                }
-
-                clearInterval(id);
+        if (cardOpacity >= durationCard) {
+            alert("max Opacity reached.");
+            clearInterval(id);
+            if (!finished) {
+                clearInterval(id3);
+                id3 = setInterval(unShineCards, 10)
             } else {
-                cardOpacity = 0;
-                cycle = true;
+                durationUnCard = 0;
+                clearInterval(id3);
+                id3 = setInterval(unShineCards, 10)
             }
         }
+
         else {
             cardOpacity += 0.01;
             for (var i = 0; i < inputs.length; i++) {
-                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`  
+                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`;
                 // console.log(inputs[i])  
             }
         }
     }   
 
+    function unShineCards() {
+        if (cardOpacity <= durationUnCard) {
+            alert("cards have been unlighted.");
+            // for (var i = 0; i < inputs.length; i++) {
+            //     colorIt(inputs[i].className, inputs[i]);
+            // }
+            clearInterval(id3);
+
+            clearInterval(id);
+            clearInterval(id4);
+            durationCard = 1.6;
+            finished = true;
+            id = setInterval(shiningCards, 10);
+            id4 = setInterval(unShineGround, 10);
+        }
+        else {
+            cardOpacity -= 0.01;
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`  
+                // console.log(inputs[i])  
+            }
+        }
+    }
+
     function shiningGround() {
-        if (backgroundOpacity >= 1) {
-            console.log("123");
+        if (backgroundOpacity >= durationGround) {
             clearInterval(id2);
-            document.querySelectorAll(".overlay").forEach((element) => element.remove());
         }
         else {
             remove(".overlay");
             createOverlay(backgroundOpacity);
             backgroundOpacity += 0.01;
+        }
+    }
+
+    function unShineGround() {
+        if (backgroundOpacity <= durationUnGround) {
+            remove(".overlay");
+            clearInterval(id4);            
+            for (var i = 0; i < inputs.length; i++) {
+                colorIt(inputs[i].className, inputs[i]);
+            }
+            alert("stopped.")
+        }
+        else {
+            remove(".overlay");
+            createOverlay(backgroundOpacity);
+            backgroundOpacity -= 0.01;
         }
     }
     // function thunderOverlay() {
@@ -1040,7 +1083,7 @@ function createOverlay(opacity) {
     position: absolute;
     top: 0%;
     left: 0%
-    z-index: 90000;
+    z-index: 1;
     background-color: white;
     opacity: ${opacity};
     `
