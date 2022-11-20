@@ -98,9 +98,10 @@ function turn() {
 }
 
 function checkIfUno() {
-    if (myHand.length === 1) {
-        console.log("HELOOOOOOOOOOOOOOOO");
-        // createCanvas();
+    if (myHand.length === 1) {        
+        const coordsX = findCoords();
+        const coordsY = findCoords();
+        thunder(coordsX, coordsY);
     }
 }
 
@@ -220,37 +221,16 @@ function createRemeberButton(body) {
     body.appendChild(label);
 }
 
-function createCanvas() {
-    var id = null;
-    var size = 0;
-    const maxSize = 80
+function createScreenCanvas() {
     const canvas = document.createElement("canvas");
-    const x = Math.random() * 100;
-    const y = Math.random() * 100;
     canvas.id = "uno";
-    canvas.width = maxSize;
-    canvas.height = maxSize;    
+    canvas.width = "100%";
+    canvas.height = "100%";    
     canvas.style.cssText = `
         position: absolute;
-        object-position: 20% 80%;
         border: 1px solid #000000;
-        transform: scale(1);
     `;
-    clearInterval(id);
-    id = setInterval(spawn, 10);
-
-    function spawn() {
-        if (size >= 1) {
-            console.log("a")
-            clearInterval(id);
-        }
-        else {
-            console.log(size)
-            size += 0.1;
-            canvas.style.transform = `scale(${size})`
-        }
-    }
-    newBody.appendChild(canvas)
+    html.appendChild(canvas)
 }
 
 
@@ -670,10 +650,9 @@ function load(menu, parameter) { //loads a premade menu
     const newBody = document.createElement("div");
     newBody.id = "newBody";
     newBody.style.cssText = `
-    min-height: 100%;
+        min-height: 100%;
 
     `
-    html.style.minHeight = "100%";//useless
 
 
 
@@ -939,17 +918,22 @@ function makeCanvas(coordsX, coordsY) {
 } //top: 70% - 0%
   //left: 70% - 0%
 function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN sky gets light, THEN ground gets slightly unlight(while the thunder gets unlight), THEN all three get light, THEN all three get unlight
+    document.querySelector(".a").style.backgroundImage = ""; //makes the colorful card uncolorful
     const html = document.querySelector("html") 
     var id = null; //light cards
     var id2 = null; //light background
     var id3 = null; //unlight cards
     var id4 = null; //unlight background
     var cardOpacity = 0;
-    var backgroundOpacity = -0.6;
+    var backgroundOpacity = -1.2;
     var finished = false;
+    var trulyFinished = false;
+    var speed = 0.3
     console.log(coordsX)
     console.log(coordsY)
-    
+    const canvas = document.createElement("canvas");
+    // createScreenCanvas();
+    // drawLine(canvas, [0, 0], [coordsX, coordsY])
     // html.append(createOverlay(0.1))
     // canvas.id = "uno";
     // canvas.width = maxSize;
@@ -973,11 +957,21 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
 
     function shiningCards() {
         if (cardOpacity >= durationCard) {
-            alert("max Opacity reached.");
+            // console.log("max Opacity reached.");
+            //alert("max Opacity reached.");
             clearInterval(id);
-            if (!finished) {
+            if (finished) { //plays after the first time everything gets white
+                // console.log("finsihing it");
+                //alert("finisching it")
+                trulyFinished = true;
                 clearInterval(id3);
+                // console.log(durationUnCard);
+                // console.log(durationUnGround);
+                // console.log(cardOpacity);
+                backgroundOpacity = cardOpacity
                 id3 = setInterval(unShineCards, 10)
+                clearInterval(id4);
+                id4 = setInterval(unShineGround, 10);
             } else {
                 durationUnCard = 0;
                 clearInterval(id3);
@@ -986,7 +980,7 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
         }
 
         else {
-            cardOpacity += 0.01;
+            cardOpacity += speed;
             for (var i = 0; i < inputs.length; i++) {
                 inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`;
                 // console.log(inputs[i])  
@@ -996,21 +990,26 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
 
     function unShineCards() {
         if (cardOpacity <= durationUnCard) {
-            alert("cards have been unlighted.");
+            // console.log("cards have been unlighted.");
+            //alert("cards have been unlighted.");
             // for (var i = 0; i < inputs.length; i++) {
             //     colorIt(inputs[i].className, inputs[i]);
             // }
             clearInterval(id3);
 
-            clearInterval(id);
-            clearInterval(id4);
-            durationCard = 1.6;
+            if (!trulyFinished) {                   
+                clearInterval(id);
+                durationCard = 1.6;
+                id = setInterval(shiningCards, 10);
+            }
+            if (finished) {
+                clearInterval(id4);
+                id4 = setInterval(unShineGround, 10);
+            }
             finished = true;
-            id = setInterval(shiningCards, 10);
-            id4 = setInterval(unShineGround, 10);
         }
         else {
-            cardOpacity -= 0.01;
+            cardOpacity -= speed;
             for (var i = 0; i < inputs.length; i++) {
                 inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`  
                 // console.log(inputs[i])  
@@ -1020,12 +1019,17 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
 
     function shiningGround() {
         if (backgroundOpacity >= durationGround) {
+            // console.log("background is now shiny")
+            //alert("background is now shiny")
             clearInterval(id2);
+            
+            clearInterval(id3); //after the ground has shined, make the cards slightly transparent
+            id3 = setInterval(unShineCards, 10)
         }
         else {
             remove(".overlay");
             createOverlay(backgroundOpacity);
-            backgroundOpacity += 0.01;
+            backgroundOpacity += speed;
         }
     }
 
@@ -1036,12 +1040,13 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
             for (var i = 0; i < inputs.length; i++) {
                 colorIt(inputs[i].className, inputs[i]);
             }
-            alert("stopped.")
+            // console.log("ground has been unshined")
+            //alert("stopped.")
         }
         else {
             remove(".overlay");
             createOverlay(backgroundOpacity);
-            backgroundOpacity -= 0.01;
+            backgroundOpacity -= speed;
         }
     }
     // function thunderOverlay() {
@@ -1075,6 +1080,21 @@ function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN 
     // }
 }
 
+function drawLine(ctx, begin, end, stroke = 'black', width = 1) {
+    if (stroke) {
+        ctx.strokeStyle = stroke;
+    }
+
+    if (width) {
+        ctx.lineWidth = width;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(...begin);
+    ctx.lineTo(...end);
+    ctx.stroke();
+}
+
 function createOverlay(opacity) {
     const overlay = document.createElement("div")
     overlay.style.cssText = `
@@ -1092,6 +1112,9 @@ function createOverlay(opacity) {
 }
 //----------------CSS COMES HERE------------------
 const html = document.querySelector("html");
+html.style.cssText = `
+    height: 200px;
+`
 //found bugs:
 //✓ reloading in settings messes up bots count
 //✓ bots cant play dark cards
@@ -1099,4 +1122,4 @@ const html = document.querySelector("html");
 //when playing a skip turn card as the last, it keeps the buttons disabled 
 //when a bot plays a dark card, console.log() wont show which color it played
 //middle card gets disabled while playing
-//when bot plays + card to win, it freezes OR when u pick a card and a bot wins, it freezes5
+//when bot plays + card to win, it freezes OR PERHAPS IDK when u pick a card and a bot wins, it freezes5
