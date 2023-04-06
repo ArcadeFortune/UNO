@@ -65,6 +65,11 @@ function firstCapital(string) { //usefull to capitalize the first letter in a st
     return string[0].toUpperCase() + string.substring(1);
 }
 
+function removeLetters(string) { //removes all letters from a string, return int
+    string = string.replace(/[a-zA-Z()]/g,'');
+    return parseFloat(string)
+}
+
 function disableButtons() {
     const inputs = document.querySelectorAll("button");
     for (var i = 0; i < inputs.length; i++) {
@@ -81,11 +86,11 @@ function enableButtons() {
     }
 }
 
-function wait() {
+function wait(miliseconds = 0) {
     return new Promise(resolve => {
         setTimeout(() => {  
             resolve('resolved');
-        }, gameSettings.roundSpeed * 100);
+        }, (gameSettings.roundSpeed * 100) + miliseconds);
     });
 }
 
@@ -113,8 +118,268 @@ function checkIfWon(hand) {
     }
 }
 
-function createUno() {
+function createUno(coordsX, coordsY) {
 
+    try {
+        document.querySelector(".a").style.backgroundImage = ""; //makes the colorful card uncolorful
+    } catch (error) {
+    }
+    
+    const html = document.querySelector("html") 
+    var id1 = null; //light cards
+    var id2 = null; //light background
+    var id3 = null; //unlight cards
+    var id4 = null; //unlight background
+    var cardOpacity = 0;
+    var backgroundOpacity = -1;
+    var finished = false;
+    var trulyFinished = false;
+    var speed = 0.05; //0.3
+    var backgroundSpeed = 0.04;
+    var durationCard = 1.2;
+    var durationGround = 0.6;
+    var durationUnCard = 0.2;
+    var durationUnGround = 0;
+    var shouldAlert = false
+    console.log(coordsX)
+    console.log(coordsY)
+    // createScreenCanvas();
+    // drawLine(canvas, [0, 0], [coordsX, coordsY])
+    // html.append(createOverlay(0.1))
+    // canvas.id = "uno";
+    // canvas.width = maxSize;
+    // canvas.height = maxSize;    
+    // canvas.style.cssText = `
+    //     position: absolute;
+    //     object-position: 20% 80%;
+    //     border: 1px solid #000000;
+    //     transform: scale(1);
+    // `;
+    createOverlay(0);
+    clearInterval(id);
+    clearInterval(id2);
+    id1 = setInterval(shiningCards, 10);
+    id2 = setInterval(shiningGround, 10);
+    const inputs = document.querySelectorAll("button"); 
+
+    function shiningCards() {
+        if (cardOpacity >= durationCard) {
+            console.log("max Opacity reached.");
+            shouldAlert ? alert("max Opacity reached.") : null;
+            clearInterval(id1);
+            
+            if (finished) { //plays after the first time everything gets white
+                console.log("finsihing it");
+                shouldAlert ? alert("finisching it") : null;
+                trulyFinished = true;
+                clearInterval(id3);
+                // console.log(durationUnCard);
+                // console.log(durationUnGround);
+                // console.log(cardOpacity);
+                backgroundOpacity = cardOpacity
+                id3 = setInterval(unShineCards, 10)
+                clearInterval(id4);
+                id4 = setInterval(unShineGround, 10);
+                console.log("FINISHEDDDDDDDDDDDDDDDDDDDDddd")
+            } else {
+                durationUnCard = 0;
+                clearInterval(id3);
+                id3 = setInterval(unShineCards, 10)
+            }
+        }
+        else {
+            cardOpacity += speed;
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`;
+                // console.log(inputs[i])  
+            }
+        }
+    }
+
+    // function shiningCards() {
+    //     if (cardOpacity >= durationCard) {
+    //         console.log("max Opacity reached.");
+    //         //alert("max Opacity reached.");
+    //         clearInterval(id);
+    //         if (finished) { //plays after the first time everything gets white
+    //             console.log("finsihing it");
+    //             alert("finisching it");
+    //             trulyFinished = true;
+    //             clearInterval(id3);
+    //             // console.log(durationUnCard);
+    //             // console.log(durationUnGround);
+    //             // console.log(cardOpacity);
+    //             backgroundOpacity = cardOpacity
+    //             id3 = setInterval(unShineCards, 10)
+    //             clearInterval(id4);
+    //             id4 = setInterval(unShineGround, 10);
+    //             console.log("FINISHEDDDDDDDDDDDDDDDDDDDDddd")
+    //         } else {
+    //             durationUnCard = 0;
+    //             clearInterval(id3);
+    //             id3 = setInterval(unShineCards, 10)
+    //         }            
+    //     }
+
+    //     else {
+    //         cardOpacity += speed;
+    //         for (var i = 0; i < inputs.length; i++) {
+    //             inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`;
+    //             // console.log(inputs[i])  
+    //         }
+    //     }
+    // }   
+
+    function unShineCards() {
+        if (cardOpacity <= durationUnCard) {
+            console.log("cards have been unlighted.");
+            shouldAlert ? alert("cards have been unlighted.") : null;
+            // for (var i = 0; i < inputs.length; i++) {
+            //     colorIt(inputs[i].className, inputs[i]);
+            // }
+            clearInterval(id3);
+
+            if (!trulyFinished) {                   
+                clearInterval(id1);
+                durationCard = 1.6;
+                id1 = setInterval(shiningCards, 10);
+            }
+            if (finished) {
+                clearInterval(id4);
+                id4 = setInterval(unShineGround, 10);
+            }
+            finished = true;
+        }
+        else {
+            cardOpacity -= speed;
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`  
+                // console.log(inputs[i])  
+            }
+        }
+    }
+
+    function shiningGround() {
+        if (backgroundOpacity >= durationGround) {
+            console.log("background is now shiny")
+            shouldAlert ? alert("background is now shiny") : null;
+            clearInterval(id2);
+            
+            clearInterval(id3); //after the ground has shined, make the cards slightly transparent
+            id3 = setInterval(unShineCards, 10)
+        }
+        else {
+            remove(".overlay");
+            createOverlay(backgroundOpacity);
+            backgroundOpacity += backgroundSpeed;
+        }
+    }
+
+    function unShineGround() {
+        if (backgroundOpacity <= durationUnGround) {
+            remove(".overlay");
+            clearInterval(id4);            
+            for (var i = 0; i < inputs.length; i++) {
+                colorIt(inputs[i].className, inputs[i]);
+            }
+            console.log("ground has been unshined")
+            shouldAlert ? alert("stopped.") : null;
+        }
+        else {
+            remove(".overlay");
+            createOverlay(backgroundOpacity);
+            backgroundOpacity -= speed;
+        }
+    }
+    // function thunderOverlay() {
+    //     if (opacity >= 1) {
+    //         console.log("max Opacity reached.")           
+            
+    //         var elements = document.querySelectorAll("button");   
+
+    //         for(i = 0, len = elements.length; i < len; i++) {   
+    //             elements[i].style.cssText = `
+    //             background-color: rgba(255,255,255, ${opacity});
+    //             `
+    //         }
+    //         // html.append(createOverlay(1, 0))
+    //         clearInterval(id);
+    //     }
+    //     else {
+    //         console.log(opacity)
+            
+    //         var elements = document.querySelectorAll("button");   
+
+    //         for(i = 0, len = elements.length; i < len; i++) {   
+    //             elements[i].style.cssText = `
+    //             background-color: rgba(255,255,255, ${opacity});
+    //             `
+    //         }
+ 
+    //         // html.append(createOverlay(opacity))
+    //         opacity += 0.2;
+        // }
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var spawnId = null;
+    var id = null;
+    var maxAnimateSize = 0.5;
+    var tempSize = 0;
+    var tempSizeScale = 0.09;
+    const canvas = makeCanvas(coordsX, coordsY);
+    console.log("max size", maxAnimateSize);
+    console.log(canvas.style.transform)
+    console.log(removeLetters(canvas.style.transform.slice(7)))
+
+    canvas.style.transform = `scale(0) rotate(${removeLetters(canvas.style.transform.slice(12))}deg)`;
+       
+
+    function spawnUno() {
+        if (removeLetters(canvas.style.transform) >= maxAnimateSize) {
+            maxAnimateSize = 1.5;
+            tempSizeScale = 0.005;
+            clearInterval(spawnId);
+        } else {
+            canvas.style.transform = `scale(${tempSize + tempSizeScale}) rotate(${removeLetters(canvas.style.transform.slice(12))}deg)`;
+            tempSize += tempSizeScale;
+        }
+    }
+
+    // clearInterval(id);
+    // id = setInterval(animateSize, 60);
+
+    // function animateSize() {
+    //     console.log("current Size", canvas.style.transform);
+    //     console.log(removeLetters(canvas.style.transform))
+    //     if (removeLetters(canvas.style.transform) >= maxAnimateSize) {
+    //         console.log("Max size reached.!s");
+    //         console.log(canvas)
+    //         clearInterval(id);
+    //     }
+    //     else {
+    //         canvas.style.transform = `scale(${tempSize + tempSizeScale}) rotate(${removeLetters(canvas.style.transform.slice(12))}deg)`;
+    //         tempSize += tempSizeScale;
+    //     }
+    // }
+    return canvas
 }
 
 function createTitle(innerHTML, hx, body, isSubtitle) { //creates a title underlined
@@ -513,7 +778,7 @@ function createHotbar(myHand, body) {
     p.id = "hotbar";
     p.style.cssText = `
         position: absolute;
-        top: 80%;
+        top: 75%;
         width: 97%;
         text-align: center;
 
@@ -698,7 +963,7 @@ function load(menu, parameter) { //loads a premade menu
             window.location.href = "../"; //redirects to index.html to reload settings
         }
         localStorage.setItem("totalPlayerCount", 1); //make sure every game starts with the same totalPlayerCount
-        html.style.background = "url(table.jpg)";
+        html.style.background = "url(../pictures/table.jpg)";
         myHand = createHand(); //creating;
         console.log("This is you hand: ", myHand);
         for (let p = 2; p < gameSettings.startPlayerAmount + 1; p++) {
@@ -707,11 +972,8 @@ function load(menu, parameter) { //loads a premade menu
         console.log("Starting card will be: ", middleCard[0]);
         
         createMiddle(newBody, middleCard);
-
         createHotbar(myHand, newBody);
-
         createSideMiddle(myHand, newBody); //to collect cards when you cant play a card
-
         createBotsMiddle(newBody, bots);
         
         const btn = document.createElement("button");
@@ -755,7 +1017,7 @@ function load(menu, parameter) { //loads a premade menu
             const coordsX = findCoords();
             const coordsY = findCoords();
             const canvas = makeCanvas(coordsX, coordsY);
-            // newBody.appendChild(canvas);
+            newBody.appendChild(canvas);
             thunder(coordsX, coordsY);
 
         };
@@ -791,8 +1053,9 @@ function load(menu, parameter) { //loads a premade menu
     }
 
     if (menu === "test") {
+        html.style.background = "url(../UNO/pictures/table.jpg)";
         newBody.style.cssText = `
-            min-height: 100%;   
+            min-height: 100%;
         `
         // const btn = document.createElement("button");
         // btn.innerHTML = "secret dev route";
@@ -853,12 +1116,11 @@ function load(menu, parameter) { //loads a premade menu
         const btn3 = document.createElement("button");
         btn3.innerHTML = "create thunder";
         btn3.onclick = function() {
-            console.log("THUNDERING");
             const coordsX = findCoords();
             const coordsY = findCoords();
-            const canvas = makeCanvas(coordsX, coordsY);
-            newBody.appendChild(canvas);
+            console.log("THUNDERING!!");
             thunder(coordsX, coordsY);
+            newBody.appendChild(createUno(coordsX, coordsY));
         };
         newBody.appendChild(btn3);
         
@@ -906,193 +1168,41 @@ function findCoords() {
 function makeCanvas(coordsX, coordsY) {
     const canvas = document.createElement("canvas");
     canvas.style.cssText = `
+        background-color: yellow;
         position: absolute;
         border: 1px solid #000000;
-        height: 100px;
+        height: 50px;
         width: 100px;
         top: ${coordsY}%;
         left: ${coordsX}%;
-        transform: scale(1);
+        transform: scale(1) rotate(20deg);
     `;
+    canvas.onmouseover = function() {
+        canvas.style.cursor = "pointer";
+    }
+    canvas.onclick = function() {
+        console.log("hello");
+    }
+
     return canvas
 } //top: 70% - 0%
   //left: 70% - 0%
 function thunder(coordsX, coordsY) {//ground gets light with the lighting, THEN sky gets light, THEN ground gets slightly unlight(while the thunder gets unlight), THEN all three get light, THEN all three get unlight
-    document.querySelector(".a").style.backgroundImage = ""; //makes the colorful card uncolorful
-    const html = document.querySelector("html") 
-    var id = null; //light cards
-    var id2 = null; //light background
-    var id3 = null; //unlight cards
-    var id4 = null; //unlight background
-    var cardOpacity = 0;
-    var backgroundOpacity = -1.2;
-    var finished = false;
-    var trulyFinished = false;
-    var speed = 0.3
-    console.log(coordsX)
-    console.log(coordsY)
-    const canvas = document.createElement("canvas");
-    // createScreenCanvas();
-    // drawLine(canvas, [0, 0], [coordsX, coordsY])
-    // html.append(createOverlay(0.1))
-    // canvas.id = "uno";
-    // canvas.width = maxSize;
-    // canvas.height = maxSize;    
-    // canvas.style.cssText = `
-    //     position: absolute;
-    //     object-position: 20% 80%;
-    //     border: 1px solid #000000;
-    //     transform: scale(1);
-    // `;
-    createOverlay(0);
-    clearInterval(id);
-    clearInterval(id2);
-    var durationCard = 1.2;
-    var durationGround = 0.6;
-    var durationUnCard = 0.2;
-    var durationUnGround = 0;
-    id = setInterval(shiningCards, 10);
-    id2 = setInterval(shiningGround, 10);
-    const inputs = document.querySelectorAll("button");
-
-    function shiningCards() {
-        if (cardOpacity >= durationCard) {
-            // console.log("max Opacity reached.");
-            //alert("max Opacity reached.");
-            clearInterval(id);
-            if (finished) { //plays after the first time everything gets white
-                // console.log("finsihing it");
-                //alert("finisching it")
-                trulyFinished = true;
-                clearInterval(id3);
-                // console.log(durationUnCard);
-                // console.log(durationUnGround);
-                // console.log(cardOpacity);
-                backgroundOpacity = cardOpacity
-                id3 = setInterval(unShineCards, 10)
-                clearInterval(id4);
-                id4 = setInterval(unShineGround, 10);
-            } else {
-                durationUnCard = 0;
-                clearInterval(id3);
-                id3 = setInterval(unShineCards, 10)
-            }
-        }
-
-        else {
-            cardOpacity += speed;
-            for (var i = 0; i < inputs.length; i++) {
-                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`;
-                // console.log(inputs[i])  
-            }
-        }
-    }   
-
-    function unShineCards() {
-        if (cardOpacity <= durationUnCard) {
-            // console.log("cards have been unlighted.");
-            //alert("cards have been unlighted.");
-            // for (var i = 0; i < inputs.length; i++) {
-            //     colorIt(inputs[i].className, inputs[i]);
-            // }
-            clearInterval(id3);
-
-            if (!trulyFinished) {                   
-                clearInterval(id);
-                durationCard = 1.6;
-                id = setInterval(shiningCards, 10);
-            }
-            if (finished) {
-                clearInterval(id4);
-                id4 = setInterval(unShineGround, 10);
-            }
-            finished = true;
-        }
-        else {
-            cardOpacity -= speed;
-            for (var i = 0; i < inputs.length; i++) {
-                inputs[i].style.backgroundColor = `rgba(255,255,255, ${cardOpacity})`  
-                // console.log(inputs[i])  
-            }
-        }
-    }
-
-    function shiningGround() {
-        if (backgroundOpacity >= durationGround) {
-            // console.log("background is now shiny")
-            //alert("background is now shiny")
-            clearInterval(id2);
-            
-            clearInterval(id3); //after the ground has shined, make the cards slightly transparent
-            id3 = setInterval(unShineCards, 10)
-        }
-        else {
-            remove(".overlay");
-            createOverlay(backgroundOpacity);
-            backgroundOpacity += speed;
-        }
-    }
-
-    function unShineGround() {
-        if (backgroundOpacity <= durationUnGround) {
-            remove(".overlay");
-            clearInterval(id4);            
-            for (var i = 0; i < inputs.length; i++) {
-                colorIt(inputs[i].className, inputs[i]);
-            }
-            // console.log("ground has been unshined")
-            //alert("stopped.")
-        }
-        else {
-            remove(".overlay");
-            createOverlay(backgroundOpacity);
-            backgroundOpacity -= speed;
-        }
-    }
-    // function thunderOverlay() {
-    //     if (opacity >= 1) {
-    //         console.log("max Opacity reached.")           
-            
-    //         var elements = document.querySelectorAll("button");   
-
-    //         for(i = 0, len = elements.length; i < len; i++) {   
-    //             elements[i].style.cssText = `
-    //             background-color: rgba(255,255,255, ${opacity});
-    //             `
-    //         }
-    //         // html.append(createOverlay(1, 0))
-    //         clearInterval(id);
-    //     }
-    //     else {
-    //         console.log(opacity)
-            
-    //         var elements = document.querySelectorAll("button");   
-
-    //         for(i = 0, len = elements.length; i < len; i++) {   
-    //             elements[i].style.cssText = `
-    //             background-color: rgba(255,255,255, ${opacity});
-    //             `
-    //         }
- 
-    //         // html.append(createOverlay(opacity))
-    //         opacity += 0.2;
-        // }
-    // }
+    
 }
 
-function drawLine(ctx, begin, end, stroke = 'black', width = 1) {
-    if (stroke) {
-        ctx.strokeStyle = stroke;
-    }
-
-    if (width) {
-        ctx.lineWidth = width;
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(...begin);
-    ctx.lineTo(...end);
-    ctx.stroke();
+function drawLine() {
+    const canvas = document.createElement("canvas");
+    const body = document.querySelector(body);
+    canvas.style.cssText = `
+        border: 1px solid #000000;
+        height: 100%;
+        width: 99%;
+        top: 0;
+        left: 0;
+        transform: scale(1) translate(0, 0);
+    `;
+    body.parentNode.insertBefore(canvas, body)
 }
 
 function createOverlay(opacity) {
@@ -1112,9 +1222,6 @@ function createOverlay(opacity) {
 }
 //----------------CSS COMES HERE------------------
 const html = document.querySelector("html");
-html.style.cssText = `
-    height: 200px;
-`
 //found bugs:
 //✓ reloading in settings messes up bots count
 //✓ bots cant play dark cards
